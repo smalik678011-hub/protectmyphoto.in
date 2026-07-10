@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /login.html
+Disallow: /404.html
 
 Sitemap: https://protectmyphoto.in/sitemap.xml
