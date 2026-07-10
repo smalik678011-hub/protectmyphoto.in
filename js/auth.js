@@ -122,6 +122,12 @@
     }
   }
 
+  function shouldUseRedirect() {
+    var touchDevice = navigator.maxTouchPoints && navigator.maxTouchPoints > 0;
+    var smallScreen = window.matchMedia && window.matchMedia("(max-width: 760px)").matches;
+    return touchDevice || smallScreen;
+  }
+
   async function loadFirebase() {
     var configModule;
     try {
@@ -149,6 +155,14 @@
 
   var firebaseReady = loadFirebase().then(function (firebase) {
     activeFirebase = firebase;
+    firebase.authModule.getRedirectResult(firebase.auth).then(function (result) {
+      if (result && result.user) {
+        showSignedIn(result.user);
+        setStatus("Signed in with Google.", "success");
+      }
+    }).catch(function (error) {
+      setStatus(cleanError(error), "error");
+    });
     firebase.authModule.onAuthStateChanged(firebase.auth, showSignedIn);
     return firebase;
   }).catch(function (error) {
@@ -219,12 +233,16 @@
     setStatus("Opening Google sign in...", "info");
 
     try {
+      if (shouldUseRedirect()) {
+        await firebase.authModule.signInWithRedirect(firebase.auth, firebase.googleProvider);
+        return;
+      }
       await firebase.authModule.signInWithPopup(firebase.auth, firebase.googleProvider);
       setStatus("Signed in with Google.", "success");
     } catch (error) {
-      if (error.code === "auth/popup-blocked" || error.code === "auth/popup-closed-by-user") {
+      if (error.code !== "auth/cancelled-popup-request") {
         try {
-          setStatus("Popup did not complete. Redirecting to Google sign in...", "info");
+          setStatus("Redirecting to Google sign in...", "info");
           await firebase.authModule.signInWithRedirect(firebase.auth, firebase.googleProvider);
           return;
         } catch (redirectError) {
@@ -297,6 +315,10 @@
     if (firebase) {
       await firebase.authModule.signOut(firebase.auth);
       try {
+        if (shouldUseRedirect()) {
+          await firebase.authModule.signInWithRedirect(firebase.auth, firebase.googleProvider);
+          return;
+        }
         await firebase.authModule.signInWithPopup(firebase.auth, firebase.googleProvider);
         setStatus("Signed in with Google.", "success");
         return;
