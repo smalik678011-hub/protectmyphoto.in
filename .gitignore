@@ -4,5 +4,7 @@ js/firebase-config.js
 .local-preview-server.js
 start-preview.bat
 start-preview.ps1
+_hostinger_upload/
+*.zip
 .DS_Store
 Thumbs.db
