@@ -1,0 +1,219 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="ProtectMyPhoto is a privacy-first image toolkit for compressing, resizing, converting, and preparing photos in your browser.">
+    <title>ProtectMyPhoto - Privacy-first Image Tools</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="site.webmanifest">
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="index.html" aria-label="ProtectMyPhoto home">
+        <span class="brand-mark">P</span>
+        <span>ProtectMyPhoto</span>
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="siteNav">Menu</button>
+      <nav class="top-nav" id="siteNav" aria-label="Main navigation">
+        <a href="tools.html">Tools</a>
+        <a href="passport-photo-maker.html">Passport Photo</a>
+        <a href="blog.html">Blog</a>
+        <a href="login.html">Login</a>
+        <a href="contact.html">Contact</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero home-hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Private image toolkit</p>
+          <h1>Useful image tools that keep your photos on your device.</h1>
+          <p>
+            Compress, resize, convert, remove metadata, make PDFs, and prepare
+            passport photos directly in your browser. No upload is required in
+            the current browser tools.
+          </p>
+          <div class="hero-actions">
+            <a class="button primary-action" href="tools.html">View all tools</a>
+            <a class="button ghost-action" href="passport-photo-maker.html">Make passport photo</a>
+          </div>
+        </div>
+        <div class="upload-hero-card dynamic-device" aria-label="Private image upload preview">
+          <div class="device-top" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+          <div class="hero-upload-zone" data-demo-drop>
+            <svg width="72" height="72" viewBox="0 0 72 72" aria-hidden="true">
+              <rect x="10" y="14" width="52" height="44" rx="14" fill="#eff6ff"/>
+              <path d="M24 46l9-10 7 7 5-6 8 9H24z" fill="#2563eb"/>
+              <circle cx="47" cy="28" r="5" fill="#10b981"/>
+            </svg>
+            <strong data-demo-title>Select image</strong>
+            <span data-demo-subtitle>Process locally</span>
+            <a class="button primary-action" href="compress-image.html">Start with image</a>
+          </div>
+          <div class="device-meter" aria-hidden="true">
+            <span data-demo-meter></span>
+          </div>
+          <div class="device-list" data-demo-steps>
+            <span class="is-active">Validate</span>
+            <span>Process</span>
+            <span>Download</span>
+          </div>
+          <div class="trust-badges" aria-label="Privacy benefits">
+            <span>Private by design</span>
+            <span>No account required</span>
+            <span>Mobile ready</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="section-heading">
+          <p class="eyebrow">Popular tools</p>
+          <h2>Start with the tools people search for every day.</h2>
+          <p>Search or filter the toolkit to jump straight to the job you need.</p>
+        </div>
+        <div class="tool-command">
+          <label class="tool-search">
+            <span>Search tools</span>
+            <input data-tool-search type="search" placeholder="Compress, resize, passport...">
+          </label>
+          <div class="filter-row" aria-label="Tool filters">
+            <button class="filter-chip is-active" type="button" data-tool-filter="all">All</button>
+            <button class="filter-chip" type="button" data-tool-filter="optimize">Optimize</button>
+            <button class="filter-chip" type="button" data-tool-filter="convert">Convert</button>
+            <button class="filter-chip" type="button" data-tool-filter="privacy">Privacy</button>
+            <button class="filter-chip" type="button" data-tool-filter="india">India</button>
+          </div>
+        </div>
+        <div class="tool-grid" data-tool-grid>
+          <a class="tool-card" href="compress-image.html" data-tool-card data-category="optimize" data-keywords="compress reduce size jpg png webp">
+            <span class="tool-icon">C</span>
+            <span class="tool-badge">Most used</span>
+            <span class="tool-visual tool-visual-compress" aria-hidden="true"><svg viewBox="0 0 150 104"><rect x="18" y="18" width="74" height="58" rx="16"/><path d="M31 61l18-21 14 16 9-10 10 15H31z"/><path class="visual-accent" d="M106 27h26M106 52h18M106 77h10"/><path class="visual-line" d="M68 8v19M68 96V77M7 52h26M143 52h-26"/></svg></span>
+            <strong>Compress Image</strong>
+            <small>Reduce JPG, PNG, and WebP file size.</small>
+            <span class="tool-meta"><span>Smaller files</span><span>Open</span></span>
+          </a>
+          <a class="tool-card" href="resize-image.html" data-tool-card data-category="optimize" data-keywords="resize width height dimension pixel">
+            <span class="tool-icon">R</span>
+            <span class="tool-badge">Forms</span>
+            <span class="tool-visual resize-visual" aria-hidden="true"><svg viewBox="0 0 150 104"><rect x="25" y="18" width="82" height="62" rx="16"/><path d="M39 63l17-19 13 15 10-11 15 15H39z"/><path class="visual-accent" d="M112 16h21v21M38 88H17V67"/><path class="visual-line" d="M112 37l21-21M38 67L17 88"/><rect class="visual-dash" x="32" y="25" width="68" height="48" rx="12"/></svg></span>
+            <strong>Resize Image</strong>
+            <small>Set width, height, or max dimension.</small>
+            <span class="tool-meta"><span>Exact pixels</span><span>Open</span></span>
+          </a>
+          <a class="tool-card" href="convert-image.html" data-tool-card data-category="convert" data-keywords="convert jpg png webp format">
+            <span class="tool-icon">V</span>
+            <span class="tool-badge">Formats</span>
+            <span class="tool-visual convert-visual" aria-hidden="true"><svg viewBox="0 0 150 104"><rect x="22" y="20" width="54" height="64" rx="14"/><rect class="visual-card-alt" x="78" y="20" width="54" height="64" rx="14"/><path class="visual-accent" d="M65 52h25M83 44l8 8-8 8"/><text x="49" y="57">JPG</text><text x="105" y="57">PNG</text></svg></span>
+            <strong>Convert Image</strong>
+            <small>Export JPG, PNG, or WebP.</small>
+            <span class="tool-meta"><span>JPG PNG WebP</span><span>Open</span></span>
+          </a>
+          <a class="tool-card" href="remove-metadata.html" data-tool-card data-category="privacy" data-keywords="metadata exif privacy remove clean">
+            <span class="tool-icon">M</span>
+            <span class="tool-badge">Privacy</span>
+            <span class="tool-visual privacy-visual" aria-hidden="true"><svg viewBox="0 0 150 104"><rect x="20" y="22" width="72" height="58" rx="16"/><path d="M32 64l16-18 13 14 9-10 11 14H32z"/><path class="visual-line" d="M102 32h25M102 48h21M102 64h16"/><path class="visual-shield" d="M116 76c18-8 23-21 23-38l-23-9-23 9c0 17 5 30 23 38z"/><path class="visual-check" d="M105 51l8 8 17-20"/></svg></span>
+            <strong>Remove Metadata</strong>
+            <small>Re-export photos without hidden EXIF data.</small>
+            <span class="tool-meta"><span>Clean export</span><span>Open</span></span>
+          </a>
+          <a class="tool-card" href="image-to-pdf.html" data-tool-card data-category="convert" data-keywords="image to pdf convert document">
+            <span class="tool-icon">P</span>
+            <span class="tool-badge">PDF</span>
+            <span class="tool-visual pdf-visual" aria-hidden="true"><svg viewBox="0 0 150 104"><rect class="visual-card-alt" x="25" y="16" width="56" height="70" rx="12"/><rect x="47" y="24" width="58" height="70" rx="12"/><path class="visual-accent" d="M60 45h32M60 58h28M60 71h20"/><text x="73" y="41">PDF</text><path class="visual-line" d="M111 31h23M111 46h17M111 61h23"/></svg></span>
+            <strong>Image to PDF</strong>
+            <small>Create a simple PDF from images.</small>
+            <span class="tool-meta"><span>Multi-page</span><span>Open</span></span>
+          </a>
+          <a class="tool-card" href="custom-stamp-maker.html" data-tool-card data-category="convert" data-keywords="custom stamp maker digital stamp seal logo transparent png document business">
+            <span class="tool-icon">ST</span>
+            <span class="tool-badge">New</span>
+            <span class="tool-visual stamp-tool-visual" aria-hidden="true"><svg viewBox="0 0 150 104"><circle cx="70" cy="52" r="36"/><circle class="visual-dash" cx="70" cy="52" r="27"/><path class="visual-accent" d="M53 53l11 11 24-27"/><path class="visual-line" d="M107 25h24M107 43h17M107 61h24"/><text x="50" y="84">STAMP</text></svg></span>
+            <strong>Custom Stamp Maker</strong>
+            <small>Create transparent digital stamps for documents.</small>
+            <span class="tool-meta"><span>PNG SVG JPG</span><span>Open</span></span>
+          </a>
+          <a class="tool-card highlight-card" href="passport-photo-maker.html" data-tool-card data-category="india" data-keywords="passport photo maker india exam white background 20kb 50kb 100kb">
+            <span class="tool-icon">ID</span>
+            <span class="tool-badge">India</span>
+            <span class="tool-visual passport-visual" aria-hidden="true"><svg viewBox="0 0 150 104"><rect x="30" y="14" width="70" height="82" rx="14"/><circle class="visual-face" cx="65" cy="41" r="14"/><path d="M43 78c5-17 39-17 44 0"/><rect class="visual-card-alt" x="105" y="26" width="30" height="42" rx="10"/><path class="visual-accent" d="M108 81h26"/><text x="47" y="91">35x45</text></svg></span>
+            <strong>Passport Photo Maker</strong>
+            <small>India-friendly white background photo presets.</small>
+            <span class="tool-meta"><span>20KB 50KB 100KB</span><span>Open</span></span>
+          </a>
+          <a class="tool-card" href="crop-image.html" data-tool-card data-category="optimize" data-keywords="crop cut image square profile">
+            <span class="tool-icon">CR</span>
+            <span class="tool-badge">Edit</span>
+            <span class="tool-visual resize-visual" aria-hidden="true"><svg viewBox="0 0 150 104"><rect x="34" y="22" width="72" height="58" rx="14"/><path class="visual-accent" d="M24 25v66h82M44 13v66h82"/><path d="M47 62l17-19 13 15 10-11 12 15H47z"/></svg></span>
+            <strong>Crop Image</strong>
+            <small>Cut an image to an exact area.</small>
+            <span class="tool-meta"><span>Crop pixels</span><span>Open</span></span>
+          </a>
+          <a class="tool-card" href="signature-resizer.html" data-tool-card data-category="india" data-keywords="signature resize indian forms exam 10kb 20kb">
+            <span class="tool-icon">S</span>
+            <span class="tool-badge">Forms</span>
+            <span class="tool-visual privacy-visual" aria-hidden="true"><svg viewBox="0 0 150 104"><rect x="18" y="28" width="112" height="48" rx="14"/><path class="visual-line" d="M34 58c14-19 21 18 34-1 9-13 15-12 23 0 7 11 16 7 27-4"/><path class="visual-accent" d="M34 82h82"/></svg></span>
+            <strong>Signature Resizer</strong>
+            <small>Resize signatures for Indian forms.</small>
+            <span class="tool-meta"><span>10KB 20KB</span><span>Open</span></span>
+          </a>
+          <a class="tool-card" href="white-background-photo.html" data-tool-card data-category="india" data-keywords="white background photo light blue form jpg">
+            <span class="tool-icon">BG</span>
+            <span class="tool-badge">Forms</span>
+            <span class="tool-visual passport-visual" aria-hidden="true"><svg viewBox="0 0 150 104"><rect x="28" y="16" width="88" height="76" rx="16"/><circle class="visual-face" cx="72" cy="42" r="15"/><path d="M47 78c7-20 43-20 50 0"/><path class="visual-accent" d="M119 26h16M119 43h16M119 60h16"/></svg></span>
+            <strong>White Background Photo</strong>
+            <small>Create clean white or light blue canvas.</small>
+            <span class="tool-meta"><span>Form ready</span><span>Open</span></span>
+          </a>
+        </div>
+        <p class="empty-state" data-empty-tools hidden>No matching tools found.</p>
+      </section>
+
+      <section class="content-split">
+        <div>
+          <p class="eyebrow">For Indian users</p>
+          <h2>Fast form-ready image helpers.</h2>
+          <p>
+            Many Indian forms ask for small JPG files, white backgrounds, and
+            strict dimensions. ProtectMyPhoto focuses on simple mobile-friendly
+            controls, clear downloads, and browser-side image processing.
+          </p>
+        </div>
+        <div class="mini-list">
+          <span>20 KB, 50 KB, 100 KB targets</span>
+          <span>Passport and exam-style presets</span>
+          <span>Manual zoom and position controls</span>
+          <span>Clear safety messages for large or corrupt files</span>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div>
+        <a class="brand footer-brand" href="index.html"><span class="brand-mark">P</span><span>ProtectMyPhoto</span></a>
+        <p>Privacy-first browser tools for photos and documents.</p>
+      </div>
+      <nav aria-label="Footer navigation">
+        <a href="tools.html">Tools</a>
+        <a href="about.html">About</a>
+        <a href="faq.html">FAQ</a>
+        <a href="privacy-policy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="contact.html">Contact</a>
+        <a href="login.html">Login</a>
+      </nav>
+      <p><a href="mailto:admin@protectmyphoto.in">admin@protectmyphoto.in</a></p>
+    </footer>
+
+    <script src="js/site.js"></script>
+      <script src="js/schema.js"></script>
+    <script src="js/account-status.js?v=1" type="module"></script>
+  </body>
+</html>
+
+

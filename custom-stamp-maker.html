@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Create professional custom digital stamps online. Choose round, square, rectangular, oval, or custom sizes, add text and logos, preview the stamp on documents, and download it as a transparent PNG.">
+    <title>Custom Stamp Maker - Create Digital Stamps Online</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="site.webmanifest">
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="index.html"><span class="brand-mark">P</span><span>ProtectMyPhoto</span></a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="siteNav">Menu</button>
+      <nav class="top-nav" id="siteNav" aria-label="Main navigation">
+        <a href="tools.html">Tools</a>
+        <a href="passport-photo-maker.html">Passport Photo</a>
+        <a href="signature-resizer.html">Signature</a>
+        <a href="contact.html">Contact</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="stamp-hero" id="stampHero">
+        <div class="stamp-hero-copy">
+          <p class="eyebrow">Digital stamp maker</p>
+          <h1>Create Your Own Custom Stamp Online</h1>
+          <p>Design professional round, square, rectangular, oval, and custom digital stamps. Personalise the text, logo, border, colour, texture, and size, then download your stamp as a transparent PNG.</p>
+          <div class="hero-actions">
+            <a class="button primary-action" href="#stampEditor">Create My Stamp</a>
+            <a class="button ghost-action" href="#stampTemplates">Browse Templates</a>
+          </div>
+          <p class="mini-note">For branding, business, personal, educational, photography, document organisation, approval workflows, and creative use.</p>
+        </div>
+        <div class="stamp-hero-preview" aria-label="Sample stamp previews">
+          <canvas data-hero-stamps width="620" height="420"></canvas>
+        </div>
+      </section>
+
+      <section class="stamp-editor-shell" id="stampEditor">
+        <div class="stamp-editor-head">
+          <div>
+            <p class="eyebrow">Stamp Maker Editor</p>
+            <h2>Design, preview, and export locally.</h2>
+          </div>
+          <div class="stamp-toolbar" aria-label="Editor actions">
+            <button class="ghost-action" type="button" data-stamp-action="undo">Undo</button>
+            <button class="ghost-action" type="button" data-stamp-action="redo">Redo</button>
+            <button class="ghost-action" type="button" data-stamp-action="duplicate">Duplicate Design</button>
+            <button class="ghost-action" type="button" data-stamp-action="save">Save Draft Locally</button>
+            <button class="ghost-action" type="button" data-stamp-action="load">Load Draft</button>
+            <button class="danger-action" type="button" data-stamp-action="reset">Reset Design</button>
+          </div>
+        </div>
+
+        <div class="stamp-editor">
+          <aside class="stamp-controls" aria-label="Stamp editor controls">
+            <details open>
+              <summary>Templates</summary>
+              <div class="mini-template-row" data-mini-template-row></div>
+            </details>
+
+            <details open>
+              <summary>Shape and Size</summary>
+              <div class="shape-grid" data-shape-grid>
+                <button type="button" data-shape="round"><span class="shape-mini round"></span>Round</button>
+                <button type="button" data-shape="square"><span class="shape-mini square"></span>Square</button>
+                <button type="button" data-shape="rectangle"><span class="shape-mini rectangle"></span>Rectangle</button>
+                <button type="button" data-shape="oval"><span class="shape-mini oval"></span>Oval</button>
+                <button type="button" data-shape="badge"><span class="shape-mini badge"></span>Badge</button>
+                <button type="button" data-shape="custom"><span class="shape-mini custom"></span>Custom</button>
+              </div>
+              <div class="control-grid compact">
+                <label>Preset size <select data-stamp-input="sizePreset"><option value="small">Small</option><option value="medium" selected>Medium</option><option value="large">Large</option><option value="document">Document Stamp</option><option value="social">Social Media Stamp</option><option value="print">Print Stamp</option><option value="custom">Custom Size</option></select></label>
+                <label>Width <input data-stamp-input="width" type="number" min="120" max="2400" value="720"></label>
+                <label>Height <input data-stamp-input="height" type="number" min="120" max="2400" value="720"></label>
+                <label>Unit <select data-stamp-input="unit"><option value="px">Pixels</option><option value="mm">Millimetres</option><option value="in">Inches</option></select></label>
+                <label class="checkbox-row"><input data-stamp-input="lockAspect" type="checkbox" checked> Lock aspect ratio</label>
+              </div>
+            </details>
+
+            <details open>
+              <summary>Text</summary>
+              <div class="text-field-list" data-text-fields></div>
+              <div class="control-grid compact">
+                <label>Curve intensity <input data-stamp-input="curveIntensity" type="range" min="0" max="1" step="0.05" value="0.75"></label>
+                <label>Text radius <input data-stamp-input="textRadius" type="range" min="0.25" max="0.48" step="0.01" value="0.39"></label>
+                <label>Text spacing <input data-stamp-input="textSpacing" type="range" min="-3" max="12" step="1" value="3"></label>
+                <label>Top arc position <input data-stamp-input="topArc" type="range" min="-45" max="45" step="1" value="0"></label>
+                <label>Bottom arc position <input data-stamp-input="bottomArc" type="range" min="-45" max="45" step="1" value="0"></label>
+                <label>Direction <select data-stamp-input="textDirection"><option value="normal">Normal</option><option value="reverse">Reverse top arc</option></select></label>
+                <label class="checkbox-row"><input data-stamp-input="reverseBottom" type="checkbox" checked> Reverse bottom text</label>
+              </div>
+            </details>
+
+            <details>
+              <summary>Logo and Icons</summary>
+              <p class="hint-text">Your logo is processed locally in your browser and is not stored on our servers.</p>
+              <div class="control-grid compact">
+                <label>Upload logo <input data-logo-upload type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml"></label>
+                <label>Built-in icon <select data-stamp-input="icon"><option value="">None</option><option value="check">Check mark</option><option value="camera">Camera</option><option value="shield">Shield</option><option value="star">Star</option><option value="crown">Crown</option><option value="leaf">Leaf</option><option value="building">Building</option><option value="bag">Shopping bag</option><option value="package">Package</option><option value="heart">Heart</option><option value="initials">Initials</option><option value="business">Business symbol</option></select></label>
+                <label>Logo/Icon size <input data-stamp-input="logoSize" type="range" min="0.08" max="0.42" step="0.01" value="0.18"></label>
+                <label>Rotation <input data-stamp-input="logoRotation" type="range" min="-180" max="180" step="1" value="0"></label>
+                <label>Opacity <input data-stamp-input="logoOpacity" type="range" min="0.05" max="1" step="0.05" value="0.9"></label>
+                <label>X position <input data-stamp-input="logoX" type="range" min="-0.35" max="0.35" step="0.01" value="0"></label>
+                <label>Y position <input data-stamp-input="logoY" type="range" min="-0.35" max="0.35" step="0.01" value="-0.02"></label>
+              </div>
+              <button class="ghost-action" type="button" data-stamp-action="removeLogo">Remove logo</button>
+            </details>
+
+            <details>
+              <summary>Typography</summary>
+              <div class="control-grid compact">
+                <label>Font family <select data-stamp-input="fontFamily"><option value="Inter, Arial, sans-serif">Inter</option><option value="Manrope, Arial, sans-serif">Manrope</option><option value="Georgia, serif">Serif</option><option value="Arial, sans-serif">Arial</option><option value="'Courier New', monospace">Mono</option></select></label>
+                <label>Font size <input data-stamp-input="fontSize" type="range" min="18" max="82" step="1" value="42"></label>
+                <label>Weight <select data-stamp-input="fontWeight"><option value="600">Regular</option><option value="800" selected>Bold</option><option value="950">Heavy</option></select></label>
+                <label>Style <select data-stamp-input="fontStyle"><option value="normal">Normal</option><option value="italic">Italic</option></select></label>
+                <label>Line height <input data-stamp-input="lineHeight" type="range" min="0.8" max="1.8" step="0.05" value="1.1"></label>
+                <label>Text align <select data-stamp-input="textAlign"><option value="center">Center</option><option value="left">Left</option><option value="right">Right</option></select></label>
+                <label>Text rotation <input data-stamp-input="textRotation" type="range" min="-45" max="45" step="1" value="0"></label>
+              </div>
+            </details>
+
+            <details>
+              <summary>Border</summary>
+              <div class="control-grid compact">
+                <label>Border style <select data-stamp-input="borderStyle"><option value="double">Double border</option><option value="single">Single border</option><option value="dotted">Dotted border</option><option value="dashed">Dashed border</option><option value="decorative">Decorative border</option></select></label>
+                <label>Outer border <input data-stamp-input="outerBorder" type="range" min="0" max="28" step="1" value="14"></label>
+                <label>Inner border <input data-stamp-input="innerBorder" type="range" min="0" max="18" step="1" value="6"></label>
+                <label>Gap between borders <input data-stamp-input="borderGap" type="range" min="10" max="72" step="1" value="34"></label>
+                <label>Border radius <input data-stamp-input="borderRadius" type="range" min="0" max="120" step="1" value="28"></label>
+              </div>
+            </details>
+
+            <details>
+              <summary>Colour</summary>
+              <div class="ink-swatches" data-ink-swatches>
+                <button type="button" data-ink="#d93224" style="--swatch:#d93224">Red</button>
+                <button type="button" data-ink="#1f5fbf" style="--swatch:#1f5fbf">Blue</button>
+                <button type="button" data-ink="#151515" style="--swatch:#151515">Black</button>
+                <button type="button" data-ink="#157347" style="--swatch:#157347">Green</button>
+                <button type="button" data-ink="#7a3fb3" style="--swatch:#7a3fb3">Purple</button>
+                <button type="button" data-ink="#7a4a25" style="--swatch:#7a4a25">Brown</button>
+              </div>
+              <div class="control-grid compact">
+                <label>Custom ink <input data-stamp-input="inkColor" type="color" value="#1f5fbf"></label>
+                <label>Text colour <input data-stamp-input="textColor" type="color" value="#1f5fbf"></label>
+                <label>Border colour <input data-stamp-input="borderColor" type="color" value="#1f5fbf"></label>
+                <label>Icon colour <input data-stamp-input="iconColor" type="color" value="#1f5fbf"></label>
+                <label>Background <input data-stamp-input="backgroundColor" type="color" value="#ffffff"></label>
+                <label class="checkbox-row"><input data-stamp-input="transparent" type="checkbox" checked> Transparent background</label>
+              </div>
+            </details>
+
+            <details>
+              <summary>Texture</summary>
+              <div class="control-grid compact">
+                <label>Stamp style <select data-stamp-input="textureStyle"><option value="clean">Clean</option><option value="natural">Natural Ink</option><option value="rough">Rough</option><option value="distressed">Distressed</option><option value="vintage">Vintage</option><option value="faded">Faded</option><option value="grunge">Grunge</option><option value="light">Light Print</option><option value="heavy">Heavy Ink</option></select></label>
+                <label>Texture intensity <input data-stamp-input="textureIntensity" type="range" min="0" max="1" step="0.05" value="0.16"></label>
+                <label>Opacity <input data-stamp-input="opacity" type="range" min="0.1" max="1" step="0.05" value="0.95"></label>
+                <label>Blur <input data-stamp-input="blur" type="range" min="0" max="2" step="0.1" value="0"></label>
+                <label>Ink spread <input data-stamp-input="inkSpread" type="range" min="0" max="10" step="1" value="0"></label>
+                <label>Roughness <input data-stamp-input="roughness" type="range" min="0" max="1" step="0.05" value="0.14"></label>
+                <label>Noise <input data-stamp-input="noise" type="range" min="0" max="1" step="0.05" value="0.12"></label>
+                <label>Fading <input data-stamp-input="fading" type="range" min="0" max="1" step="0.05" value="0.08"></label>
+              </div>
+            </details>
+
+            <details>
+              <summary>Position and Layers</summary>
+              <div class="layer-actions">
+                <button class="ghost-action" type="button" data-layer-action="centerH">Centre horizontally</button>
+                <button class="ghost-action" type="button" data-layer-action="centerV">Centre vertically</button>
+                <button class="ghost-action" type="button" data-layer-action="delete">Delete selected</button>
+                <button class="ghost-action" type="button" data-layer-action="duplicate">Duplicate selected</button>
+                <button class="ghost-action" type="button" data-layer-action="front">Bring forward</button>
+                <button class="ghost-action" type="button" data-layer-action="back">Send backward</button>
+              </div>
+              <p class="hint-text">Click the logo or centre text on the preview, then drag it to reposition. Use controls above for size and rotation.</p>
+            </details>
+
+            <details open>
+              <summary>Export</summary>
+              <div class="control-grid compact">
+                <label>Format <select data-stamp-input="exportFormat"><option value="png-transparent">Transparent PNG</option><option value="png-background">PNG with background</option><option value="jpg">JPG</option><option value="svg">SVG</option></select></label>
+                <label>Resolution <select data-stamp-input="exportScale"><option value="1">1x</option><option value="2" selected>2x</option><option value="4">4x</option></select></label>
+                <label>Padding <input data-stamp-input="padding" type="range" min="0" max="80" step="4" value="24"></label>
+                <label class="checkbox-row"><input data-stamp-input="tightCrop" type="checkbox"> Tight crop</label>
+              </div>
+              <button class="primary-action" type="button" data-stamp-action="download">Download stamp</button>
+            </details>
+          </aside>
+
+          <section class="stamp-preview-panel" aria-label="Live stamp preview">
+            <div class="stamp-preview-card">
+              <div class="stamp-preview-top">
+                <div><strong>Live preview</strong><span data-selected-layer>Click logo or centre text to edit position</span></div>
+                <button class="ghost-action" type="button" data-stamp-action="new">New Design</button>
+              </div>
+              <canvas data-stamp-canvas width="720" height="720" aria-label="Custom stamp preview"></canvas>
+              <div class="stamp-bottom-bar">
+                <button class="primary-action" type="button" data-stamp-action="download">Download</button>
+                <button class="ghost-action" type="button" data-stamp-action="save">Save Draft</button>
+                <button class="danger-action" type="button" data-stamp-action="reset">Reset</button>
+              </div>
+            </div>
+          </section>
+        </div>
+        <p class="stamp-toast" data-stamp-toast hidden></p>
+      </section>
+
+      <section class="section-band" id="stampTemplates">
+        <div class="section-heading">
+          <p class="eyebrow">Template gallery</p>
+          <h2>Start with a polished stamp template.</h2>
+          <p>Business, status, document, and creative templates. No government, legal, banking, police, notary, court, passport, identity, or regulated official seals.</p>
+        </div>
+        <div class="template-filter-row" data-template-filters></div>
+        <div class="stamp-template-grid" data-template-gallery></div>
+      </section>
+
+      <section class="stamp-document-section">
+        <div class="section-heading">
+          <p class="eyebrow">Document preview</p>
+          <h2>See How Your Stamp Looks on a Document</h2>
+          <p>These are generic fictional sample previews only. They are not official identity, government, licence, legal, or regulated documents.</p>
+        </div>
+        <div class="document-preview-layout">
+          <aside class="document-controls">
+            <label>Sample document <select data-doc-input="type"><option value="invoice">Invoice</option><option value="receipt">Receipt</option><option value="certificate">Certificate-style sample</option><option value="letterhead">Letterhead</option><option value="delivery">Delivery note</option><option value="business">Business document</option><option value="photo">Photograph</option><option value="blank">Blank paper</option></select></label>
+            <label>Stamp opacity <input data-doc-input="opacity" type="range" min="0.1" max="1" step="0.05" value="0.76"></label>
+            <label>Stamp size <input data-doc-input="scale" type="range" min="0.25" max="1.8" step="0.05" value="0.62"></label>
+            <label>Stamp rotation <input data-doc-input="rotation" type="range" min="-45" max="45" step="1" value="-12"></label>
+            <div class="view-actions">
+              <button class="ghost-action" type="button" data-doc-view="full">Full page</button>
+              <button class="ghost-action" type="button" data-doc-view="in">Zoom in</button>
+              <button class="ghost-action" type="button" data-doc-view="out">Zoom out</button>
+              <button class="ghost-action" type="button" data-doc-view="fit">Fit to screen</button>
+              <button class="ghost-action" type="button" data-doc-view="reset">Reset position</button>
+            </div>
+          </aside>
+          <div class="document-canvas-wrap">
+            <canvas data-document-canvas width="900" height="1160" aria-label="Sample document with stamp preview"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="section-heading"><p class="eyebrow">Examples</p><h2>Use-case examples</h2></div>
+        <div class="stamp-example-grid">
+          <article><span>Invoice</span><strong>Round blue business stamp</strong></article>
+          <article><span>Receipt</span><strong>Red PAID stamp</strong></article>
+          <article><span>Business document</span><strong>Green VERIFIED stamp</strong></article>
+          <article><span>Photograph</span><strong>Black photographer stamp</strong></article>
+          <article><span>Letterhead</span><strong>Purple creator stamp</strong></article>
+          <article><span>Sample page</span><strong>Rectangular CONFIDENTIAL stamp</strong></article>
+        </div>
+      </section>
+
+      <section class="content-split">
+        <div>
+          <p class="eyebrow">How it works</p>
+          <h2>Make a stamp in four steps.</h2>
+          <ol class="step-list large"><li><span>1</span>Choose a stamp shape.</li><li><span>2</span>Add your text, logo, and styling.</li><li><span>3</span>Preview it on a document.</li><li><span>4</span>Download your stamp.</li></ol>
+        </div>
+        <div class="use-case-card">
+          <h2>Responsible use notice</h2>
+          <p>This tool is intended for branding, personal, creative, educational, and legitimate business use. Do not use it to imitate government, legal, banking, police, notary, court, identity, licence, certificate, or other regulated official seals.</p>
+        </div>
+      </section>
+
+      <section class="faq-section">
+        <details><summary>What is a digital stamp?</summary><p>A digital stamp is a graphic mark used for branding, status labels, organisation, or creative document workflows.</p></details>
+        <details><summary>Can I create a round stamp?</summary><p>Yes. Choose Round or Oval and use curved top and bottom text controls.</p></details>
+        <details><summary>Can I upload my own logo?</summary><p>Yes. Uploaded logos are processed locally in your browser and are not stored on our servers.</p></details>
+        <details><summary>Can I create a transparent stamp?</summary><p>Yes. Choose Transparent PNG in the export panel.</p></details>
+        <details><summary>What file formats can I download?</summary><p>PNG, JPG, and basic SVG export are supported. PNG is recommended for transparent stamps.</p></details>
+        <details><summary>Can I choose a custom stamp size?</summary><p>Yes. Select Custom Size and enter width, height, and unit.</p></details>
+        <details><summary>Can I preview my stamp on a document?</summary><p>Yes. Use the document preview section to drag, resize, rotate, and adjust opacity on generic sample documents.</p></details>
+        <details><summary>Is the stamp maker free?</summary><p>The browser-side editor works without login and without paid APIs.</p></details>
+        <details><summary>Is my uploaded logo stored?</summary><p>No. In this implementation, logos remain in the browser memory/local draft only on your device.</p></details>
+        <details><summary>Can I use the stamp for business branding?</summary><p>Yes, for legitimate branding, packaging, creative, and business workflows.</p></details>
+        <details><summary>Can I create official government seals?</summary><p>No. Do not use this tool to imitate government, legal, banking, police, notary, court, identity, licence, certificate, or other regulated official seals.</p></details>
+      </section>
+
+      <section class="related-section">
+        <h2>Related tools</h2>
+        <div class="related-grid">
+          <a class="related-link" href="white-background-photo.html"><strong>Photo Background Tool</strong><span>Prepare clean images for stamp-ready documents.</span></a>
+          <a class="related-link" href="white-background-photo.html"><strong>Photo Stamp Maker</strong><span>Use clean photo canvas tools.</span></a>
+          <a class="related-link" href="remove-metadata.html"><strong>Image Metadata Viewer</strong><span>Clean image metadata before sharing.</span></a>
+          <a class="related-link" href="image-to-pdf.html"><strong>Document Stamp Maker</strong><span>Export stamped images and documents.</span></a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div><a class="brand footer-brand" href="index.html"><span class="brand-mark">P</span><span>ProtectMyPhoto</span></a><p>Privacy-first browser tools.</p></div>
+      <nav aria-label="Footer navigation"><a href="tools.html">Tools</a><a href="faq.html">FAQ</a><a href="privacy-policy.html">Privacy</a><a href="terms.html">Terms</a><a href="contact.html">Contact</a></nav>
+      <p><a href="mailto:admin@protectmyphoto.in">admin@protectmyphoto.in</a></p>
+    </footer>
+    <script src="js/site.js"></script>
+    <script src="js/stamp-maker.js"></script>
+    <script src="js/schema.js"></script>
+    <script src="js/account-status.js?v=1" type="module"></script>
+  </body>
+</html>

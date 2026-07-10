@@ -1,0 +1,17 @@
+{
+  "name": "ProtectMyPhoto",
+  "short_name": "ProtectMyPhoto",
+  "description": "Privacy-first browser image tools.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f8f5",
+  "theme_color": "#126b55",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "64x64",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

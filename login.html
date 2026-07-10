@@ -1,0 +1,71 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="ProtectMyPhoto account login.">
+    <title>Login - ProtectMyPhoto</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="site.webmanifest">
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="index.html"><span class="brand-mark">P</span><span>ProtectMyPhoto</span></a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="siteNav">Menu</button>
+      <nav class="top-nav" id="siteNav" aria-label="Main navigation">
+        <a href="tools.html">Tools</a>
+        <a href="passport-photo-maker.html">Passport Photo</a>
+        <a href="privacy-policy.html">Privacy</a>
+        <a href="contact.html">Contact</a>
+      </nav>
+    </header>
+    <main class="login-shell">
+      <section class="login-panel" aria-labelledby="loginTitle">
+        <div>
+          <p class="eyebrow">Account</p>
+          <h1 id="loginTitle">Private tools, optional account.</h1>
+          <p>Use image tools without login. Sign in only for account preferences and future premium features.</p>
+          <div class="trust-list">
+            <span>No image uploads</span>
+            <span>Email verification</span>
+            <span>Temporary emails blocked</span>
+          </div>
+        </div>
+          <div class="auth-card">
+          <div class="auth-tabs" role="tablist" aria-label="Account action" data-auth-tabs>
+            <button class="is-active" type="button" data-auth-tab="signin">Sign in</button>
+            <button type="button" data-auth-tab="signup">Create account</button>
+          </div>
+          <p class="auth-status" data-auth-status hidden></p>
+          <div class="user-panel" data-user-panel hidden>
+            <strong data-user-email></strong>
+            <p>You are signed in. Continue using tools locally in your browser.</p>
+            <a class="primary-action" href="tools.html">Continue to tools</a>
+            <button class="google-action" type="button" data-auth-google-switch><span aria-hidden="true">G</span> Use another Google account</button>
+            <button class="link-action" type="button" data-auth-switch="signup">Create a new email account</button>
+            <button class="link-action" type="button" data-auth-switch="signin">Sign in with email</button>
+            <button class="ghost-action" type="button" data-auth-logout>Sign out</button>
+          </div>
+          <form class="login-form" data-auth-form>
+            <input type="hidden" value="signin" data-auth-mode>
+            <button class="google-action" type="button" data-google-login><span aria-hidden="true">G</span> Continue with Google</button>
+            <div class="form-divider"><span>or use email</span></div>
+            <label>Name <input type="text" placeholder="Your name" autocomplete="name" data-auth-name hidden></label>
+            <label>Email <input type="email" placeholder="you@example.com" autocomplete="email" data-auth-email required></label>
+            <label>Password <input type="password" placeholder="Minimum 8 characters" autocomplete="current-password" data-auth-password required minlength="8"></label>
+            <button class="primary-action" type="submit" data-auth-action>Continue</button>
+            <button class="link-action" type="button" data-auth-reset>Forgot password?</button>
+            <a class="ghost-action" href="tools.html">Use tools without login</a>
+          </form>
+        </div>
+      </section>
+    </main>
+    <script src="js/site.js"></script>
+    <script src="js/schema.js"></script>
+    <script src="js/auth.js?v=5" type="module"></script>
+    <script src="js/account-status.js?v=1" type="module"></script>
+  </body>
+</html>
+
+
