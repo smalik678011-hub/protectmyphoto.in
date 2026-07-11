@@ -20,6 +20,7 @@
   var userEmail = document.querySelector("[data-user-email]");
   var activeFirebase = null;
   var activeUser = null;
+  var authStateChecked = false;
 
   if (!form) return;
 
@@ -107,13 +108,19 @@
   function showSignedIn(user) {
     activeUser = user || null;
     if (!user) {
-      userPanel.hidden = true;
+      if (userPanel) userPanel.hidden = true;
       form.hidden = false;
       if (authTabs) authTabs.hidden = false;
       return;
     }
-    userEmail.textContent = user.email || "Signed in";
-    userPanel.hidden = false;
+    try {
+      localStorage.setItem("pmp:lastSignedInEmail", user.email || "Signed in");
+      localStorage.removeItem("pmp:googleRedirectStarted");
+    } catch (error) {
+      // Ignore storage failures in private browsing modes.
+    }
+    if (userEmail) userEmail.textContent = user.email || "Signed in";
+    if (userPanel) userPanel.hidden = false;
     form.hidden = true;
     if (authTabs) authTabs.hidden = false;
     setStatus("You are signed in. Image tools continue to process files in your browser.", "success");
@@ -175,7 +182,10 @@
 
     var app = window.firebase.apps.length ? window.firebase.app() : window.firebase.initializeApp(config);
     var auth = window.firebase.auth(app);
+    await auth.setPersistence(window.firebase.auth.Auth.Persistence.LOCAL);
+    auth.useDeviceLanguage();
     var googleProvider = new window.firebase.auth.GoogleAuthProvider();
+    googleProvider.setCustomParameters({ prompt: "select_account" });
 
     return {
       auth: auth,
@@ -217,6 +227,10 @@
 
   var firebaseReady = loadFirebase().then(function (firebase) {
     activeFirebase = firebase;
+    firebase.authModule.onAuthStateChanged(firebase.auth, function (user) {
+      authStateChecked = true;
+      showSignedIn(user);
+    });
     firebase.authModule.getRedirectResult(firebase.auth).then(function (result) {
       if (result && result.user) {
         showSignedIn(result.user);
@@ -225,7 +239,21 @@
     }).catch(function (error) {
       setStatus(cleanError(error), "error");
     });
-    firebase.authModule.onAuthStateChanged(firebase.auth, showSignedIn);
+    window.setTimeout(function () {
+      if (firebase.auth.currentUser) {
+        showSignedIn(firebase.auth.currentUser);
+        return;
+      }
+      var redirectStarted = false;
+      try {
+        redirectStarted = localStorage.getItem("pmp:googleRedirectStarted") === "1";
+      } catch (error) {
+        redirectStarted = false;
+      }
+      if (redirectStarted && authStateChecked) {
+        setStatus("Google sign in returned, but the browser did not keep the Firebase session. Try once in Chrome with cookies/site data enabled.", "error");
+      }
+    }, 1800);
     return firebase;
   }).catch(function (error) {
     setStatus("Firebase load failed: " + cleanError(error), "error");
@@ -293,6 +321,11 @@
     googleButton.disabled = true;
     googleButton.dataset.loading = "true";
     setStatus("Opening Google sign in...", "info");
+    try {
+      localStorage.setItem("pmp:googleRedirectStarted", "1");
+    } catch (storageError) {
+      // Continue even if localStorage is unavailable.
+    }
 
     try {
       if (shouldUseRedirect()) {
@@ -300,6 +333,11 @@
         return;
       }
       await firebase.authModule.signInWithPopup(firebase.auth, firebase.googleProvider);
+      try {
+        localStorage.removeItem("pmp:googleRedirectStarted");
+      } catch (storageError) {
+        // Ignore storage failures.
+      }
       setStatus("Signed in with Google.", "success");
     } catch (error) {
       if (error.code !== "auth/cancelled-popup-request") {
@@ -377,11 +415,26 @@
     if (firebase) {
       await firebase.authModule.signOut(firebase.auth);
       try {
+        localStorage.removeItem("pmp:googleRedirectStarted");
+      } catch (storageError) {
+        // Ignore storage failures.
+      }
+      try {
+        try {
+          localStorage.setItem("pmp:googleRedirectStarted", "1");
+        } catch (storageError) {
+          // Continue even if localStorage is unavailable.
+        }
         if (shouldUseRedirect()) {
           await firebase.authModule.signInWithRedirect(firebase.auth, firebase.googleProvider);
           return;
         }
         await firebase.authModule.signInWithPopup(firebase.auth, firebase.googleProvider);
+        try {
+          localStorage.removeItem("pmp:googleRedirectStarted");
+        } catch (storageError) {
+          // Ignore storage failures.
+        }
         setStatus("Signed in with Google.", "success");
         return;
       } catch (error) {
