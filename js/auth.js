@@ -293,6 +293,7 @@
         setStatus("Signed in with Google.", "success");
       } else {
         rememberDebug("Redirect result is empty.");
+        setStatus("Sign in to manage account preferences. Tools still work without login.", "info");
       }
     }).catch(function (error) {
       clearGoogleRedirectStarted();
