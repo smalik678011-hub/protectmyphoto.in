@@ -1521,6 +1521,31 @@ a:focus-visible {
   color: #0a6846;
 }
 
+.auth-debug {
+  margin: 12px 0 0;
+  padding: 12px 14px;
+  border: 1px dashed rgba(90, 74, 66, 0.28);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+}
+
+.auth-debug strong {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--ink);
+}
+
+.auth-debug ol {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.auth-debug li + li {
+  margin-top: 4px;
+}
+
 .login-form {
   display: grid;
   gap: 14px;

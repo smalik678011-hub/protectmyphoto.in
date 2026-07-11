@@ -10,6 +10,8 @@
   var actionButton = document.querySelector("[data-auth-action]");
   var resetButton = document.querySelector("[data-auth-reset]");
   var logoutButton = document.querySelector("[data-auth-logout]");
+  var debugBox = document.querySelector("[data-auth-debug]");
+  var debugList = document.querySelector("[data-auth-debug-list]");
   var switchButtons = Array.prototype.slice.call(document.querySelectorAll("[data-auth-switch]"));
   var googleSwitchButton = document.querySelector("[data-auth-google-switch]");
   var googleButton = document.querySelector("[data-google-login]");
@@ -22,6 +24,7 @@
   var activeUser = null;
   var authStateChecked = false;
   var googleSignInStarted = false;
+  var debugSteps = [];
 
   if (!form) return;
 
@@ -53,9 +56,48 @@
     statusBox.hidden = false;
   }
 
+  function updateDebug() {
+    if (!debugBox || !debugList) return;
+    debugBox.hidden = debugSteps.length === 0;
+    debugList.innerHTML = "";
+    debugSteps.slice(-8).forEach(function (step) {
+      var item = document.createElement("li");
+      item.textContent = step;
+      debugList.appendChild(item);
+    });
+  }
+
+  function rememberDebug(step) {
+    var timestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    var message = timestamp + " - " + step;
+    debugSteps.push(message);
+    updateDebug();
+    try {
+      localStorage.setItem("pmp:lastAuthDebug", debugSteps.slice(-8).join("\n"));
+    } catch (error) {
+      // Ignore storage failures in private browsing modes.
+    }
+  }
+
+  function restoreDebug() {
+    try {
+      var previous = localStorage.getItem("pmp:lastAuthDebug");
+      if (previous) {
+        debugSteps = previous.split("\n").filter(Boolean).slice(-8);
+        updateDebug();
+      }
+    } catch (error) {
+      // Ignore storage failures in private browsing modes.
+    }
+  }
+
   function cleanError(error) {
     var message = error && error.message ? error.message : "Something went wrong.";
     return message.replace("Firebase: ", "").replace(/\s*\(auth\/[^)]+\)\.?$/, ".");
+  }
+
+  function errorCode(error) {
+    return error && error.code ? error.code : "no-code";
   }
 
   function getEmailDomain(email) {
@@ -109,11 +151,13 @@
   function showSignedIn(user) {
     activeUser = user || null;
     if (!user) {
+      rememberDebug("No signed-in user found yet.");
       if (userPanel) userPanel.hidden = true;
       form.hidden = false;
       if (authTabs) authTabs.hidden = false;
       return;
     }
+    rememberDebug("Signed in user found: " + (user.email || "Google account"));
     try {
       localStorage.setItem("pmp:lastSignedInEmail", user.email || "Signed in");
       localStorage.removeItem("pmp:googleRedirectStarted");
@@ -159,22 +203,27 @@
   async function loadFirebase() {
     var configModule;
     try {
+      rememberDebug("Loading Firebase config.");
       configModule = await import("./firebase-config.js");
     } catch (error) {
+      rememberDebug("Firebase config failed: " + errorCode(error));
       setStatus("Firebase is not connected yet. Create js/firebase-config.js from the example file after you make a Firebase project.", "error");
       throw error;
     }
 
     var config = configModule.firebaseConfig || {};
     if (!config.apiKey || config.apiKey.indexOf("YOUR_") === 0) {
+      rememberDebug("Firebase config is empty.");
       setStatus("Firebase config is still empty. Add your Firebase web app values in js/firebase-config.js.", "error");
       throw new Error("Missing Firebase config");
     }
 
+    rememberDebug("Loading Firebase Auth scripts.");
     await loadScript("https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js");
     await loadScript("https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js");
 
     if (!window.firebase || !window.firebase.apps || !window.firebase.auth) {
+      rememberDebug("Firebase Auth unavailable after script load.");
       throw new Error("Firebase scripts loaded, but Firebase Auth is unavailable.");
     }
 
@@ -184,6 +233,7 @@
     auth.useDeviceLanguage();
     var googleProvider = new window.firebase.auth.GoogleAuthProvider();
     googleProvider.setCustomParameters({ prompt: "select_account" });
+    rememberDebug("Firebase Auth ready for " + (config.authDomain || "configured domain") + ".");
 
     return {
       auth: auth,
@@ -223,22 +273,33 @@
     };
   }
 
+  restoreDebug();
+  rememberDebug("Login page script loaded.");
+
   var firebaseReady = loadFirebase().then(function (firebase) {
     activeFirebase = firebase;
+    rememberDebug("Listening for login state.");
     firebase.authModule.onAuthStateChanged(firebase.auth, function (user) {
       authStateChecked = true;
+      rememberDebug(user ? "Auth state returned signed-in user." : "Auth state returned signed-out.");
       showSignedIn(user);
     });
+    rememberDebug("Checking Google redirect result.");
     firebase.authModule.getRedirectResult(firebase.auth).then(function (result) {
       if (result && result.user) {
+        rememberDebug("Redirect result has user.");
         showSignedIn(result.user);
         setStatus("Signed in with Google.", "success");
+      } else {
+        rememberDebug("Redirect result is empty.");
       }
     }).catch(function (error) {
+      rememberDebug("Redirect result error: " + errorCode(error));
       setStatus(cleanError(error), "error");
     });
     window.setTimeout(function () {
       if (firebase.auth.currentUser) {
+        rememberDebug("Current user found after wait.");
         showSignedIn(firebase.auth.currentUser);
         return;
       }
@@ -249,11 +310,13 @@
         redirectStarted = false;
       }
       if (redirectStarted && authStateChecked) {
+        rememberDebug("Redirect returned without saved session.");
         setStatus("Google sign in returned, but the browser did not keep the Firebase session. Try once in Chrome with cookies/site data enabled.", "error");
       }
     }, 1800);
     return firebase;
   }).catch(function (error) {
+    rememberDebug("Firebase load failed: " + errorCode(error));
     setStatus("Firebase load failed: " + cleanError(error), "error");
     return null;
   });
@@ -307,8 +370,10 @@
   async function startGoogleSignIn(event) {
     if (event) event.preventDefault();
     if (googleSignInStarted) return;
+    rememberDebug("Google button tapped.");
 
     if (isFilePreview()) {
+      rememberDebug("Blocked because page is file preview.");
       setStatus("Google sign in cannot run from a file URL. Start the preview server and open " + previewLoginUrl() + ".", "error");
       return;
     }
@@ -320,6 +385,7 @@
 
     var firebase = await firebaseReady;
     if (!firebase) {
+      rememberDebug("Google sign in stopped because Firebase is not ready.");
       setStatus("Google sign in is not ready. Firebase did not load correctly.", "error");
       googleSignInStarted = false;
       googleButton.disabled = false;
@@ -329,14 +395,18 @@
 
     try {
       localStorage.setItem("pmp:googleRedirectStarted", "1");
+      rememberDebug("Google redirect marker saved.");
     } catch (storageError) {
+      rememberDebug("Storage marker could not be saved.");
       // Continue even if localStorage is unavailable.
     }
 
     try {
       setStatus("Opening Google sign in...", "info");
+      rememberDebug("Starting Google redirect.");
       await firebase.authModule.signInWithRedirect(firebase.auth, firebase.googleProvider);
     } catch (error) {
+      rememberDebug("Google redirect error: " + errorCode(error));
       try {
         localStorage.removeItem("pmp:googleRedirectStarted");
       } catch (storageError) {
