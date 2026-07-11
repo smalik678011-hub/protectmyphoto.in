@@ -10,8 +10,6 @@
   var actionButton = document.querySelector("[data-auth-action]");
   var resetButton = document.querySelector("[data-auth-reset]");
   var logoutButton = document.querySelector("[data-auth-logout]");
-  var debugBox = document.querySelector("[data-auth-debug]");
-  var debugList = document.querySelector("[data-auth-debug-list]");
   var switchButtons = Array.prototype.slice.call(document.querySelectorAll("[data-auth-switch]"));
   var googleSwitchButton = document.querySelector("[data-auth-google-switch]");
   var googleButton = document.querySelector("[data-google-login]");
@@ -23,7 +21,6 @@
   var activeFirebase = null;
   var activeUser = null;
   var googleSignInStarted = false;
-  var debugSteps = [];
 
   if (!form) return;
 
@@ -68,38 +65,9 @@
     statusBox.hidden = false;
   }
 
-  function updateDebug() {
-    if (!debugBox || !debugList) return;
-    debugBox.hidden = debugSteps.length === 0;
-    debugList.innerHTML = "";
-    debugSteps.slice(-8).forEach(function (step) {
-      var item = document.createElement("li");
-      item.textContent = step;
-      debugList.appendChild(item);
-    });
-  }
-
   function rememberDebug(step) {
-    var timestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-    var message = timestamp + " - " + step;
-    debugSteps.push(message);
-    updateDebug();
-    try {
-      localStorage.setItem("pmp:lastAuthDebug", debugSteps.slice(-8).join("\n"));
-    } catch (error) {
-      // Ignore storage failures in private browsing modes.
-    }
-  }
-
-  function restoreDebug() {
-    try {
-      var previous = localStorage.getItem("pmp:lastAuthDebug");
-      if (previous) {
-        debugSteps = previous.split("\n").filter(Boolean).slice(-8);
-        updateDebug();
-      }
-    } catch (error) {
-      // Ignore storage failures in private browsing modes.
+    if (window.location.search.indexOf("debugAuth=1") !== -1) {
+      console.info("[ProtectMyPhoto auth]", step);
     }
   }
 
@@ -262,7 +230,6 @@
     };
   }
 
-  restoreDebug();
   rememberDebug("Login page script loaded.");
 
   var firebaseReady = loadFirebase().then(function (firebase) {
@@ -276,36 +243,6 @@
       rememberDebug(user ? "Auth state returned signed-in user." : "Auth state returned signed-out.");
       showSignedIn(user);
     });
-    rememberDebug("Checking Google redirect result.");
-    firebase.authModule.getRedirectResult(firebase.auth).then(function (result) {
-      if (result && result.user) {
-        rememberDebug("Redirect result has user.");
-        showSignedIn(result.user);
-        setStatus("Signed in with Google.", "success");
-      } else {
-        rememberDebug("Redirect result is empty.");
-      }
-    }).catch(function (error) {
-      rememberDebug("Redirect result error: " + errorCode(error));
-      setStatus(cleanError(error), "error");
-    });
-    window.setTimeout(function () {
-      if (firebase.auth.currentUser) {
-        rememberDebug("Current user found after wait.");
-        showSignedIn(firebase.auth.currentUser);
-        return;
-      }
-      var redirectStarted = false;
-      try {
-        redirectStarted = localStorage.getItem("pmp:googleRedirectStarted") === "1";
-      } catch (error) {
-        redirectStarted = false;
-      }
-      if (redirectStarted) {
-        rememberDebug("Redirect returned without saved session.");
-        setStatus("Google sign in returned, but the browser did not keep the Firebase session. I am switching Google login to popup mode for this Hostinger site.", "error");
-      }
-    }, 1800);
     return firebase;
   }).catch(function (error) {
     if (googleButton) {
@@ -387,14 +324,6 @@
       googleButton.disabled = false;
       googleButton.dataset.loading = "false";
       return;
-    }
-
-    try {
-      localStorage.setItem("pmp:googleRedirectStarted", "1");
-      rememberDebug("Google sign-in marker saved.");
-    } catch (storageError) {
-      rememberDebug("Storage marker could not be saved.");
-      // Continue even if localStorage is unavailable.
     }
 
     try {
