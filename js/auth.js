@@ -35,6 +35,19 @@
     return "http://localhost:4200/login.html";
   }
 
+  function isSafariBrowser() {
+    var ua = navigator.userAgent || "";
+    var isAppleWebKit = /Safari/i.test(ua);
+    var isOtherIosBrowser = /CriOS|FxiOS|EdgiOS|OPiOS/i.test(ua);
+    var isChromeLike = /Chrome|Chromium|Edg|OPR/i.test(ua);
+    return isAppleWebKit && !isOtherIosBrowser && !isChromeLike;
+  }
+
+  function shouldUseSameDomainAuth() {
+    var host = window.location.hostname;
+    return isSafariBrowser() && (host === "protectmyphoto.in" || host === "www.protectmyphoto.in");
+  }
+
   var blockedDomains = [
     "10minutemail.com",
     "guerrillamail.com",
@@ -188,11 +201,16 @@
       throw error;
     }
 
-    var config = configModule.firebaseConfig || {};
+    var config = Object.assign({}, configModule.firebaseConfig || {});
     if (!config.apiKey || config.apiKey.indexOf("YOUR_") === 0) {
       rememberDebug("Firebase config is empty.");
       setStatus("Firebase config is still empty. Add your Firebase web app values in js/firebase-config.js.", "error");
       throw new Error("Missing Firebase config");
+    }
+
+    if (shouldUseSameDomainAuth()) {
+      config.authDomain = window.location.hostname;
+      rememberDebug("Safari mode: using same-domain auth helper.");
     }
 
     rememberDebug("Loading Firebase Auth modules.");
