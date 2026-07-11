@@ -22,7 +22,6 @@
   var userEmail = document.querySelector("[data-user-email]");
   var activeFirebase = null;
   var activeUser = null;
-  var authStateChecked = false;
   var googleSignInStarted = false;
   var debugSteps = [];
 
@@ -280,7 +279,6 @@
     activeFirebase = firebase;
     rememberDebug("Listening for login state.");
     firebase.authModule.onAuthStateChanged(firebase.auth, function (user) {
-      authStateChecked = true;
       rememberDebug(user ? "Auth state returned signed-in user." : "Auth state returned signed-out.");
       showSignedIn(user);
     });
@@ -309,9 +307,9 @@
       } catch (error) {
         redirectStarted = false;
       }
-      if (redirectStarted && authStateChecked) {
+      if (redirectStarted) {
         rememberDebug("Redirect returned without saved session.");
-        setStatus("Google sign in returned, but the browser did not keep the Firebase session. Try once in Chrome with cookies/site data enabled.", "error");
+        setStatus("Google sign in returned, but the browser did not keep the Firebase session. I am switching Google login to popup mode for this Hostinger site.", "error");
       }
     }, 1800);
     return firebase;
@@ -395,7 +393,7 @@
 
     try {
       localStorage.setItem("pmp:googleRedirectStarted", "1");
-      rememberDebug("Google redirect marker saved.");
+      rememberDebug("Google sign-in marker saved.");
     } catch (storageError) {
       rememberDebug("Storage marker could not be saved.");
       // Continue even if localStorage is unavailable.
@@ -403,16 +401,33 @@
 
     try {
       setStatus("Opening Google sign in...", "info");
-      rememberDebug("Starting Google redirect.");
-      await firebase.authModule.signInWithRedirect(firebase.auth, firebase.googleProvider);
-    } catch (error) {
-      rememberDebug("Google redirect error: " + errorCode(error));
+      rememberDebug("Starting Google popup.");
+      var credential = await firebase.authModule.signInWithPopup(firebase.auth, firebase.googleProvider);
       try {
         localStorage.removeItem("pmp:googleRedirectStarted");
       } catch (storageError) {
         // Ignore storage failures.
       }
-      setStatus(cleanError(error), "error");
+      if (credential && credential.user) {
+        showSignedIn(credential.user);
+        setStatus("Signed in with Google.", "success");
+      } else if (firebase.auth.currentUser) {
+        showSignedIn(firebase.auth.currentUser);
+      } else {
+        setStatus("Google sign in finished, but no account was returned. Please try once more.", "error");
+      }
+    } catch (error) {
+      rememberDebug("Google popup error: " + errorCode(error));
+      try {
+        localStorage.removeItem("pmp:googleRedirectStarted");
+      } catch (storageError) {
+        // Ignore storage failures.
+      }
+      if (error && (error.code === "auth/popup-blocked" || error.code === "auth/popup-closed-by-user")) {
+        setStatus("Google popup was blocked or closed. Please allow popups for ProtectMyPhoto and try again.", "error");
+      } else {
+        setStatus(cleanError(error), "error");
+      }
       googleSignInStarted = false;
       googleButton.disabled = false;
       googleButton.dataset.loading = "false";
