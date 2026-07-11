@@ -128,6 +128,29 @@
     return touchDevice || smallScreen;
   }
 
+  function loadScript(src) {
+    return new Promise(function (resolve, reject) {
+      var existing = document.querySelector('script[src="' + src + '"]');
+      if (existing) {
+        existing.addEventListener("load", resolve, { once: true });
+        existing.addEventListener("error", reject, { once: true });
+        if (existing.dataset.loaded === "true") resolve();
+        return;
+      }
+      var script = document.createElement("script");
+      script.src = src;
+      script.async = true;
+      script.onload = function () {
+        script.dataset.loaded = "true";
+        resolve();
+      };
+      script.onerror = function () {
+        reject(new Error("Could not load Firebase script: " + src));
+      };
+      document.head.appendChild(script);
+    });
+  }
+
   async function loadFirebase() {
     var configModule;
     try {
@@ -143,13 +166,52 @@
       throw new Error("Missing Firebase config");
     }
 
-    var appModule = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js");
-    var authModule = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js");
-    var app = appModule.getApps().length ? appModule.getApp() : appModule.initializeApp(config);
+    await loadScript("https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js");
+    await loadScript("https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js");
+
+    if (!window.firebase || !window.firebase.apps || !window.firebase.auth) {
+      throw new Error("Firebase scripts loaded, but Firebase Auth is unavailable.");
+    }
+
+    var app = window.firebase.apps.length ? window.firebase.app() : window.firebase.initializeApp(config);
+    var auth = window.firebase.auth(app);
+    var googleProvider = new window.firebase.auth.GoogleAuthProvider();
+
     return {
-      auth: authModule.getAuth(app),
-      googleProvider: new authModule.GoogleAuthProvider(),
-      authModule: authModule
+      auth: auth,
+      googleProvider: googleProvider,
+      authModule: {
+        onAuthStateChanged: function (authInstance, callback) {
+          return authInstance.onAuthStateChanged(callback);
+        },
+        getRedirectResult: function (authInstance) {
+          return authInstance.getRedirectResult();
+        },
+        signInWithPopup: function (authInstance, provider) {
+          return authInstance.signInWithPopup(provider);
+        },
+        signInWithRedirect: function (authInstance, provider) {
+          return authInstance.signInWithRedirect(provider);
+        },
+        signOut: function (authInstance) {
+          return authInstance.signOut();
+        },
+        createUserWithEmailAndPassword: function (authInstance, email, password) {
+          return authInstance.createUserWithEmailAndPassword(email, password);
+        },
+        signInWithEmailAndPassword: function (authInstance, email, password) {
+          return authInstance.signInWithEmailAndPassword(email, password);
+        },
+        updateProfile: function (user, profile) {
+          return user.updateProfile(profile);
+        },
+        sendEmailVerification: function (user) {
+          return user.sendEmailVerification();
+        },
+        sendPasswordResetEmail: function (authInstance, email) {
+          return authInstance.sendPasswordResetEmail(email);
+        }
+      }
     };
   }
 
@@ -166,7 +228,7 @@
     firebase.authModule.onAuthStateChanged(firebase.auth, showSignedIn);
     return firebase;
   }).catch(function (error) {
-    setStatus(cleanError(error) + " Check Firebase config and internet connection.", "error");
+    setStatus("Firebase load failed: " + cleanError(error), "error");
     return null;
   });
 
