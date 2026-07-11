@@ -99,6 +99,10 @@
     return error && error.code ? error.code : "no-code";
   }
 
+  function errorSummary(error) {
+    return errorCode(error) + ": " + cleanError(error);
+  }
+
   function getEmailDomain(email) {
     return String(email || "").trim().toLowerCase().split("@").pop();
   }
@@ -173,39 +177,13 @@
     }
   }
 
-  function loadScript(src) {
-    return new Promise(function (resolve, reject) {
-      var existing = document.querySelector('script[src="' + src + '"]');
-      if (existing) {
-        if (existing.dataset.loaded === "true" || existing.readyState === "complete") {
-          resolve();
-          return;
-        }
-        existing.addEventListener("load", resolve, { once: true });
-        existing.addEventListener("error", reject, { once: true });
-        return;
-      }
-      var script = document.createElement("script");
-      script.src = src;
-      script.async = true;
-      script.onload = function () {
-        script.dataset.loaded = "true";
-        resolve();
-      };
-      script.onerror = function () {
-        reject(new Error("Could not load Firebase script: " + src));
-      };
-      document.head.appendChild(script);
-    });
-  }
-
   async function loadFirebase() {
     var configModule;
     try {
       rememberDebug("Loading Firebase config.");
       configModule = await import("./firebase-config.js");
     } catch (error) {
-      rememberDebug("Firebase config failed: " + errorCode(error));
+      rememberDebug("Firebase config failed: " + errorSummary(error));
       setStatus("Firebase is not connected yet. Create js/firebase-config.js from the example file after you make a Firebase project.", "error");
       throw error;
     }
@@ -217,20 +195,14 @@
       throw new Error("Missing Firebase config");
     }
 
-    rememberDebug("Loading Firebase Auth scripts.");
-    await loadScript("https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js");
-    await loadScript("https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js");
-
-    if (!window.firebase || !window.firebase.apps || !window.firebase.auth) {
-      rememberDebug("Firebase Auth unavailable after script load.");
-      throw new Error("Firebase scripts loaded, but Firebase Auth is unavailable.");
-    }
-
-    var app = window.firebase.apps.length ? window.firebase.app() : window.firebase.initializeApp(config);
-    var auth = window.firebase.auth(app);
-    await auth.setPersistence(window.firebase.auth.Auth.Persistence.LOCAL);
-    auth.useDeviceLanguage();
-    var googleProvider = new window.firebase.auth.GoogleAuthProvider();
+    rememberDebug("Loading Firebase Auth modules.");
+    var appModule = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js");
+    var authSdk = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js");
+    var app = appModule.getApps().length ? appModule.getApp() : appModule.initializeApp(config);
+    var auth = authSdk.getAuth(app);
+    await authSdk.setPersistence(auth, authSdk.browserLocalPersistence);
+    authSdk.useDeviceLanguage(auth);
+    var googleProvider = new authSdk.GoogleAuthProvider();
     googleProvider.setCustomParameters({ prompt: "select_account" });
     rememberDebug("Firebase Auth ready for " + (config.authDomain || "configured domain") + ".");
 
@@ -239,34 +211,34 @@
       googleProvider: googleProvider,
       authModule: {
         onAuthStateChanged: function (authInstance, callback) {
-          return authInstance.onAuthStateChanged(callback);
+          return authSdk.onAuthStateChanged(authInstance, callback);
         },
         getRedirectResult: function (authInstance) {
-          return authInstance.getRedirectResult();
+          return authSdk.getRedirectResult(authInstance);
         },
         signInWithPopup: function (authInstance, provider) {
-          return authInstance.signInWithPopup(provider);
+          return authSdk.signInWithPopup(authInstance, provider);
         },
         signInWithRedirect: function (authInstance, provider) {
-          return authInstance.signInWithRedirect(provider);
+          return authSdk.signInWithRedirect(authInstance, provider);
         },
         signOut: function (authInstance) {
-          return authInstance.signOut();
+          return authSdk.signOut(authInstance);
         },
         createUserWithEmailAndPassword: function (authInstance, email, password) {
-          return authInstance.createUserWithEmailAndPassword(email, password);
+          return authSdk.createUserWithEmailAndPassword(authInstance, email, password);
         },
         signInWithEmailAndPassword: function (authInstance, email, password) {
-          return authInstance.signInWithEmailAndPassword(email, password);
+          return authSdk.signInWithEmailAndPassword(authInstance, email, password);
         },
         updateProfile: function (user, profile) {
-          return user.updateProfile(profile);
+          return authSdk.updateProfile(user, profile);
         },
         sendEmailVerification: function (user) {
-          return user.sendEmailVerification();
+          return authSdk.sendEmailVerification(user);
         },
         sendPasswordResetEmail: function (authInstance, email) {
-          return authInstance.sendPasswordResetEmail(email);
+          return authSdk.sendPasswordResetEmail(authInstance, email);
         }
       }
     };
@@ -277,6 +249,10 @@
 
   var firebaseReady = loadFirebase().then(function (firebase) {
     activeFirebase = firebase;
+    if (googleButton) {
+      googleButton.disabled = false;
+      googleButton.dataset.loading = "false";
+    }
     rememberDebug("Listening for login state.");
     firebase.authModule.onAuthStateChanged(firebase.auth, function (user) {
       rememberDebug(user ? "Auth state returned signed-in user." : "Auth state returned signed-out.");
@@ -314,7 +290,11 @@
     }, 1800);
     return firebase;
   }).catch(function (error) {
-    rememberDebug("Firebase load failed: " + errorCode(error));
+    if (googleButton) {
+      googleButton.disabled = false;
+      googleButton.dataset.loading = "false";
+    }
+    rememberDebug("Firebase load failed: " + errorSummary(error));
     setStatus("Firebase load failed: " + cleanError(error), "error");
     return null;
   });
@@ -381,10 +361,10 @@
     googleButton.dataset.loading = "true";
     setStatus("Starting Google sign in...", "info");
 
-    var firebase = await firebaseReady;
+    var firebase = activeFirebase;
     if (!firebase) {
-      rememberDebug("Google sign in stopped because Firebase is not ready.");
-      setStatus("Google sign in is not ready. Firebase did not load correctly.", "error");
+      rememberDebug("Google sign in stopped because Firebase is not ready yet.");
+      setStatus("Google sign in is still loading. Wait 2 seconds, then tap Continue with Google again.", "error");
       googleSignInStarted = false;
       googleButton.disabled = false;
       googleButton.dataset.loading = "false";
@@ -434,8 +414,8 @@
     }
   }
 
-  googleButton.disabled = false;
-  googleButton.dataset.loading = "false";
+  googleButton.disabled = true;
+  googleButton.dataset.loading = "true";
   googleButton.addEventListener("click", startGoogleSignIn);
   googleButton.addEventListener("touchend", startGoogleSignIn, { passive: false });
 
