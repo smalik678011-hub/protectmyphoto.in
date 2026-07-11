@@ -40,9 +40,49 @@
     return isAppleWebKit && !isOtherIosBrowser && !isChromeLike;
   }
 
+  function isIosBrowser() {
+    var ua = navigator.userAgent || "";
+    return /iPad|iPhone|iPod/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints > 1);
+  }
+
+  function isMobileBrowser() {
+    var ua = navigator.userAgent || "";
+    var touchDevice = navigator.maxTouchPoints && navigator.maxTouchPoints > 0;
+    var smallScreen = window.matchMedia && window.matchMedia("(max-width: 760px)").matches;
+    return /Android|webOS|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(ua) || (touchDevice && smallScreen);
+  }
+
+  function shouldUseRedirectSignIn() {
+    return isMobileBrowser() || isIosBrowser() || isSafariBrowser();
+  }
+
   function shouldUseSameDomainAuth() {
     var host = window.location.hostname;
-    return isSafariBrowser() && (host === "protectmyphoto.in" || host === "www.protectmyphoto.in");
+    return shouldUseRedirectSignIn() && (host === "protectmyphoto.in" || host === "www.protectmyphoto.in");
+  }
+
+  function hasGoogleRedirectStarted() {
+    try {
+      return localStorage.getItem("pmp:googleRedirectStarted") === "1";
+    } catch (error) {
+      return false;
+    }
+  }
+
+  function setGoogleRedirectStarted() {
+    try {
+      localStorage.setItem("pmp:googleRedirectStarted", "1");
+    } catch (error) {
+      // Continue even if localStorage is unavailable.
+    }
+  }
+
+  function clearGoogleRedirectStarted() {
+    try {
+      localStorage.removeItem("pmp:googleRedirectStarted");
+    } catch (error) {
+      // Ignore storage failures.
+    }
   }
 
   var blockedDomains = [
@@ -144,7 +184,7 @@
     rememberDebug("Signed in user found: " + (user.email || "Google account"));
     try {
       localStorage.setItem("pmp:lastSignedInEmail", user.email || "Signed in");
-      localStorage.removeItem("pmp:googleRedirectStarted");
+      clearGoogleRedirectStarted();
     } catch (error) {
       // Ignore storage failures in private browsing modes.
     }
@@ -181,6 +221,9 @@
       rememberDebug("Safari mode: using same-domain auth helper.");
     }
 
+    // Firebase Console manual check: Authentication authorized domains must include
+    // protectmyphoto.in and www.protectmyphoto.in. Hostinger must also serve /__/auth/
+    // without .htaccess blocking underscore-prefixed paths.
     rememberDebug("Loading Firebase Auth modules.");
     var appModule = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js");
     var authSdk = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js");
@@ -231,6 +274,9 @@
   }
 
   rememberDebug("Login page script loaded.");
+  if (hasGoogleRedirectStarted()) {
+    setStatus("Finishing Google sign in...", "info");
+  }
 
   var firebaseReady = loadFirebase().then(function (firebase) {
     activeFirebase = firebase;
@@ -238,6 +284,21 @@
       googleButton.disabled = false;
       googleButton.dataset.loading = "false";
     }
+    rememberDebug("Checking Google redirect result.");
+    firebase.authModule.getRedirectResult(firebase.auth).then(function (result) {
+      clearGoogleRedirectStarted();
+      if (result && result.user) {
+        rememberDebug("Redirect result returned signed-in user.");
+        showSignedIn(result.user);
+        setStatus("Signed in with Google.", "success");
+      } else {
+        rememberDebug("Redirect result is empty.");
+      }
+    }).catch(function (error) {
+      clearGoogleRedirectStarted();
+      rememberDebug("Redirect result error: " + errorSummary(error));
+      setStatus(cleanError(error), "error");
+    });
     rememberDebug("Listening for login state.");
     firebase.authModule.onAuthStateChanged(firebase.auth, function (user) {
       rememberDebug(user ? "Auth state returned signed-in user." : "Auth state returned signed-out.");
@@ -327,14 +388,19 @@
     }
 
     try {
+      if (shouldUseRedirectSignIn()) {
+        setGoogleRedirectStarted();
+        setStatus("Redirecting to Google sign in...", "info");
+        rememberDebug("Starting Google redirect.");
+        await firebase.authModule.signInWithRedirect(firebase.auth, firebase.googleProvider);
+        return;
+      }
+
+      clearGoogleRedirectStarted();
       setStatus("Opening Google sign in...", "info");
       rememberDebug("Starting Google popup.");
       var credential = await firebase.authModule.signInWithPopup(firebase.auth, firebase.googleProvider);
-      try {
-        localStorage.removeItem("pmp:googleRedirectStarted");
-      } catch (storageError) {
-        // Ignore storage failures.
-      }
+      clearGoogleRedirectStarted();
       if (credential && credential.user) {
         showSignedIn(credential.user);
         setStatus("Signed in with Google.", "success");
@@ -344,12 +410,8 @@
         setStatus("Google sign in finished, but no account was returned. Please try once more.", "error");
       }
     } catch (error) {
-      rememberDebug("Google popup error: " + errorCode(error));
-      try {
-        localStorage.removeItem("pmp:googleRedirectStarted");
-      } catch (storageError) {
-        // Ignore storage failures.
-      }
+      rememberDebug("Google sign-in error: " + errorSummary(error));
+      clearGoogleRedirectStarted();
       if (error && (error.code === "auth/popup-blocked" || error.code === "auth/popup-closed-by-user")) {
         setStatus("Google popup was blocked or closed. Please allow popups for ProtectMyPhoto and try again.", "error");
       } else {
@@ -423,11 +485,7 @@
     var firebase = await firebaseReady;
     if (firebase) {
       await firebase.authModule.signOut(firebase.auth);
-      try {
-        localStorage.removeItem("pmp:googleRedirectStarted");
-      } catch (storageError) {
-        // Ignore storage failures.
-      }
+      clearGoogleRedirectStarted();
       await startGoogleSignIn(event);
       return;
     }
