@@ -38,8 +38,24 @@
       <section class="hero tools-hub-hero">
         <div class="page-title">
           <p class="eyebrow">All tools</p>
-          <h1>Free browser-based image tools.</h1>
-          <p>Choose a tool and process your image locally in your browser.</p>
+          <h1>A private photo lab for everyday files.</h1>
+          <p>Compress, resize, convert, crop, rotate, make PDFs, prepare form photos, and design stamps without sending your files away.</p>
+          <div class="trust-badges center-badges" aria-label="Tool benefits">
+            <span>Browser-side processing</span>
+            <span>No forced login</span>
+            <span>Static hosting ready</span>
+          </div>
+        </div>
+        <div class="upload-hero-card tool-quick-card" aria-label="Quick image compressor">
+          <div class="device-top" aria-hidden="true"><span></span><span></span><span></span></div>
+          <div class="hero-upload-zone" data-hero-compress>
+            <input data-hero-compress-input type="file" accept="image/jpeg,image/png,image/webp" hidden>
+            <span class="quick-orb" aria-hidden="true">↓</span>
+            <strong>Quick compress</strong>
+            <span>Drop an image here for a local JPG export.</span>
+            <button class="button primary-action" type="button" data-hero-compress-button>Select image</button>
+            <small data-hero-compress-status>Works with JPG, PNG, and WebP up to 12 MB.</small>
+          </div>
         </div>
       </section>
       <section class="section-band tools-hub">
@@ -63,7 +79,7 @@
           </div>
         </div>
         <div class="tool-grid" data-tool-grid>
-          <a class="tool-card" href="compress-image.html" data-tool-card data-category="optimize" data-keywords="compress reduce size jpg png webp"><span class="tool-icon">C</span><span class="tool-badge">Most used</span><span class="tool-visual tool-visual-compress" aria-hidden="true"><svg viewBox="0 0 150 104"><rect x="18" y="18" width="74" height="58" rx="16"/><path d="M31 61l18-21 14 16 9-10 10 15H31z"/><path class="visual-accent" d="M106 27h26M106 52h18M106 77h10"/><path class="visual-line" d="M68 8v19M68 96V77M7 52h26M143 52h-26"/></svg></span><strong>Compress Image</strong><small>Reduce file size for web, forms, and sharing.</small><span class="tool-meta"><span>Smaller files</span><span>Open</span></span></a>
+          <a class="tool-card featured-tool-card" href="compress-image.html" data-tool-card data-category="optimize" data-keywords="compress reduce size jpg png webp"><span class="tool-icon">C</span><span class="tool-badge">Most used</span><span class="tool-visual tool-visual-compress" aria-hidden="true"><svg viewBox="0 0 150 104"><rect x="18" y="18" width="74" height="58" rx="16"/><path d="M31 61l18-21 14 16 9-10 10 15H31z"/><path class="visual-accent" d="M106 27h26M106 52h18M106 77h10"/><path class="visual-line" d="M68 8v19M68 96V77M7 52h26M143 52h-26"/></svg></span><strong>Compress Image</strong><small>Reduce file size for web, forms, and sharing.</small><span class="tool-meta"><span>Smaller files</span><span>Open</span></span></a>
           <a class="tool-card" href="resize-image.html" data-tool-card data-category="optimize" data-keywords="resize width height dimension pixel"><span class="tool-icon">R</span><span class="tool-badge">Forms</span><span class="tool-visual resize-visual" aria-hidden="true"><svg viewBox="0 0 150 104"><rect x="25" y="18" width="82" height="62" rx="16"/><path d="M39 63l17-19 13 15 10-11 15 15H39z"/><path class="visual-accent" d="M112 16h21v21M38 88H17V67"/><path class="visual-line" d="M112 37l21-21M38 67L17 88"/><rect class="visual-dash" x="32" y="25" width="68" height="48" rx="12"/></svg></span><strong>Resize Image</strong><small>Change image dimensions without uploading.</small><span class="tool-meta"><span>Exact pixels</span><span>Open</span></span></a>
           <a class="tool-card" href="convert-image.html" data-tool-card data-category="convert" data-keywords="convert jpg png webp format"><span class="tool-icon">V</span><span class="tool-badge">Formats</span><span class="tool-visual convert-visual" aria-hidden="true"><svg viewBox="0 0 150 104"><rect x="22" y="20" width="54" height="64" rx="14"/><rect class="visual-card-alt" x="78" y="20" width="54" height="64" rx="14"/><path class="visual-accent" d="M65 52h25M83 44l8 8-8 8"/><text x="49" y="57">JPG</text><text x="105" y="57">PNG</text></svg></span><strong>Convert Image</strong><small>Convert JPG, PNG, and WebP outputs.</small><span class="tool-meta"><span>JPG PNG WebP</span><span>Open</span></span></a>
           <a class="tool-card" href="remove-metadata.html" data-tool-card data-category="privacy" data-keywords="metadata exif privacy remove clean"><span class="tool-icon">M</span><span class="tool-badge">Privacy</span><span class="tool-visual privacy-visual" aria-hidden="true"><svg viewBox="0 0 150 104"><rect x="20" y="22" width="72" height="58" rx="16"/><path d="M32 64l16-18 13 14 9-10 11 14H32z"/><path class="visual-line" d="M102 32h25M102 48h21M102 64h16"/><path class="visual-shield" d="M116 76c18-8 23-21 23-38l-23-9-23 9c0 17 5 30 23 38z"/><path class="visual-check" d="M105 51l8 8 17-20"/></svg></span><strong>Remove Metadata</strong><small>Strip hidden camera/location metadata by re-exporting.</small><span class="tool-meta"><span>Clean export</span><span>Open</span></span></a>
@@ -77,12 +93,31 @@
         </div>
         <p class="empty-state" data-empty-tools hidden>No matching tools found.</p>
       </section>
+      <section class="faq-section" aria-labelledby="toolsFaqTitle">
+        <div class="section-heading compact-heading">
+          <p class="eyebrow">Tool FAQ</p>
+          <h2 id="toolsFaqTitle">Use tools without changing your workflow.</h2>
+        </div>
+        <details>
+          <summary>Which tool should I start with?</summary>
+          <p>Use Compress Image for file-size limits, Resize Image for exact pixels, and Passport Photo Maker for form-ready ID photos.</p>
+        </details>
+        <details>
+          <summary>Can I use these tools on Hostinger/static hosting?</summary>
+          <p>Yes. The tools run in the browser and do not need a Node.js production server.</p>
+        </details>
+        <details>
+          <summary>Are images saved by ProtectMyPhoto?</summary>
+          <p>No. The MVP tools process files locally in your browser and do not upload or store images.</p>
+        </details>
+      </section>
     </main>
     <footer class="site-footer">
       <div><a class="brand footer-brand" href="index.html"><span class="brand-mark">P</span><span>ProtectMyPhoto</span></a><p>Privacy-first browser tools.</p></div>
       <nav aria-label="Footer navigation"><a href="about.html">About</a><a href="faq.html">FAQ</a><a href="privacy-policy.html">Privacy</a><a href="terms.html">Terms</a><a href="contact.html">Contact</a><a href="login.html">Login</a></nav>
       <p><a href="mailto:admin@protectmyphoto.in">admin@protectmyphoto.in</a></p>
     </footer>
+    <script src="js/toolkit-core.js"></script>
     <script src="js/site.js"></script>
       <script src="js/schema.js"></script>
     <script src="js/account-status.js?v=1" type="module"></script>

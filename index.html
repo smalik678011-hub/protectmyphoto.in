@@ -41,23 +41,24 @@
     <main>
       <section class="hero home-hero">
         <div class="hero-copy">
-          <p class="eyebrow">Private image toolkit</p>
-          <h1>Useful image tools that keep your photos on your device.</h1>
+          <p class="eyebrow">Private image darkroom</p>
+          <h1>Image tools that feel fast, precise, and private.</h1>
           <p>
-            Compress, resize, convert, remove metadata, make PDFs, and prepare
-            passport photos directly in your browser. No upload is required in
-            the current browser tools.
+            Compress photos, resize for forms, convert formats, remove metadata,
+            make PDFs, and prepare passport photos directly in your browser.
+            Your files stay on your device.
           </p>
           <div class="hero-actions">
             <a class="button primary-action" href="tools.html">View all tools</a>
             <a class="button ghost-action" href="passport-photo-maker.html">Make passport photo</a>
           </div>
         </div>
-        <div class="upload-hero-card dynamic-device" aria-label="Private image upload preview">
+        <div class="upload-hero-card dynamic-device" aria-label="Private image quick compression">
           <div class="device-top" aria-hidden="true">
             <span></span><span></span><span></span>
           </div>
-          <div class="hero-upload-zone" data-demo-drop>
+          <div class="hero-upload-zone" data-demo-drop data-hero-compress>
+            <input data-hero-compress-input type="file" accept="image/jpeg,image/png,image/webp" hidden>
             <svg width="72" height="72" viewBox="0 0 72 72" aria-hidden="true">
               <rect x="10" y="14" width="52" height="44" rx="14" fill="#eff6ff"/>
               <path d="M24 46l9-10 7 7 5-6 8 9H24z" fill="#2563eb"/>
@@ -65,7 +66,8 @@
             </svg>
             <strong data-demo-title>Select image</strong>
             <span data-demo-subtitle>Process locally</span>
-            <a class="button primary-action" href="compress-image.html">Start with image</a>
+            <button class="button primary-action" type="button" data-hero-compress-button>Quick compress</button>
+            <small data-hero-compress-status>Drop a JPG, PNG, or WebP to download a smaller JPG.</small>
           </div>
           <div class="device-meter" aria-hidden="true">
             <span data-demo-meter></span>
@@ -111,8 +113,8 @@
       <section class="section-band">
         <div class="section-heading">
           <p class="eyebrow">Popular tools</p>
-          <h2>Start with the tools people search for every day.</h2>
-          <p>Search or filter the toolkit to jump straight to the job you need.</p>
+          <h2>One clean workspace for common image jobs.</h2>
+          <p>Search, filter, or start with the most-used tools for forms, documents, and daily sharing.</p>
         </div>
         <div class="tool-command">
           <label class="tool-search">
@@ -134,7 +136,7 @@
           </div>
         </div>
         <div class="tool-grid" data-tool-grid>
-          <a class="tool-card" href="compress-image.html" data-tool-card data-category="optimize" data-keywords="compress reduce size jpg png webp">
+          <a class="tool-card featured-tool-card" href="compress-image.html" data-tool-card data-category="optimize" data-keywords="compress reduce size jpg png webp">
             <span class="tool-icon">C</span>
             <span class="tool-badge">Most used</span>
             <span class="tool-visual tool-visual-compress" aria-hidden="true"><svg viewBox="0 0 150 104"><rect x="18" y="18" width="74" height="58" rx="16"/><path d="M31 61l18-21 14 16 9-10 10 15H31z"/><path class="visual-accent" d="M106 27h26M106 52h18M106 77h10"/><path class="visual-line" d="M68 8v19M68 96V77M7 52h26M143 52h-26"/></svg></span>
@@ -235,6 +237,25 @@
           <span>Clear safety messages for large or corrupt files</span>
         </div>
       </section>
+
+      <section class="faq-section home-faq" aria-labelledby="homeFaqTitle">
+        <div class="section-heading compact-heading">
+          <p class="eyebrow">Questions</p>
+          <h2 id="homeFaqTitle">Built for privacy-first daily use.</h2>
+        </div>
+        <details>
+          <summary>Are my images uploaded to a server?</summary>
+          <p>No. The core tools process files in your browser, so your images stay on your device.</p>
+        </details>
+        <details>
+          <summary>Do I need to create an account?</summary>
+          <p>No. Uploading, compressing, resizing, converting, and downloading work without forced login.</p>
+        </details>
+        <details>
+          <summary>Will this work on mobile?</summary>
+          <p>Yes. The interface is designed mobile-first for common Indian form and document workflows.</p>
+        </details>
+      </section>
     </main>
 
     <footer class="site-footer">
@@ -254,6 +275,7 @@
       <p><a href="mailto:admin@protectmyphoto.in">admin@protectmyphoto.in</a></p>
     </footer>
 
+    <script src="js/toolkit-core.js"></script>
     <script src="js/site.js"></script>
       <script src="js/schema.js"></script>
     <script src="js/account-status.js?v=1" type="module"></script>
