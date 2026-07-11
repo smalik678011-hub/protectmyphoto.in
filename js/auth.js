@@ -21,6 +21,7 @@
   var activeFirebase = null;
   var activeUser = null;
   var authStateChecked = false;
+  var googleSignInStarted = false;
 
   if (!form) return;
 
@@ -129,19 +130,16 @@
     }
   }
 
-  function shouldUseRedirect() {
-    var touchDevice = navigator.maxTouchPoints && navigator.maxTouchPoints > 0;
-    var smallScreen = window.matchMedia && window.matchMedia("(max-width: 760px)").matches;
-    return touchDevice || smallScreen;
-  }
-
   function loadScript(src) {
     return new Promise(function (resolve, reject) {
       var existing = document.querySelector('script[src="' + src + '"]');
       if (existing) {
+        if (existing.dataset.loaded === "true" || existing.readyState === "complete") {
+          resolve();
+          return;
+        }
         existing.addEventListener("load", resolve, { once: true });
         existing.addEventListener("error", reject, { once: true });
-        if (existing.dataset.loaded === "true") resolve();
         return;
       }
       var script = document.createElement("script");
@@ -306,21 +304,29 @@
     }
   });
 
-  googleButton.addEventListener("click", async function () {
+  async function startGoogleSignIn(event) {
+    if (event) event.preventDefault();
+    if (googleSignInStarted) return;
+
     if (isFilePreview()) {
       setStatus("Google sign in cannot run from a file URL. Start the preview server and open " + previewLoginUrl() + ".", "error");
       return;
     }
 
+    googleSignInStarted = true;
+    googleButton.disabled = true;
+    googleButton.dataset.loading = "true";
+    setStatus("Starting Google sign in...", "info");
+
     var firebase = await firebaseReady;
     if (!firebase) {
       setStatus("Google sign in is not ready. Firebase did not load correctly.", "error");
+      googleSignInStarted = false;
+      googleButton.disabled = false;
+      googleButton.dataset.loading = "false";
       return;
     }
 
-    googleButton.disabled = true;
-    googleButton.dataset.loading = "true";
-    setStatus("Opening Google sign in...", "info");
     try {
       localStorage.setItem("pmp:googleRedirectStarted", "1");
     } catch (storageError) {
@@ -328,34 +334,25 @@
     }
 
     try {
-      if (shouldUseRedirect()) {
-        await firebase.authModule.signInWithRedirect(firebase.auth, firebase.googleProvider);
-        return;
-      }
-      await firebase.authModule.signInWithPopup(firebase.auth, firebase.googleProvider);
+      setStatus("Opening Google sign in...", "info");
+      await firebase.authModule.signInWithRedirect(firebase.auth, firebase.googleProvider);
+    } catch (error) {
       try {
         localStorage.removeItem("pmp:googleRedirectStarted");
       } catch (storageError) {
         // Ignore storage failures.
       }
-      setStatus("Signed in with Google.", "success");
-    } catch (error) {
-      if (error.code !== "auth/cancelled-popup-request") {
-        try {
-          setStatus("Redirecting to Google sign in...", "info");
-          await firebase.authModule.signInWithRedirect(firebase.auth, firebase.googleProvider);
-          return;
-        } catch (redirectError) {
-          setStatus(cleanError(redirectError), "error");
-        }
-      } else {
-        setStatus(cleanError(error), "error");
-      }
-    } finally {
+      setStatus(cleanError(error), "error");
+      googleSignInStarted = false;
       googleButton.disabled = false;
       googleButton.dataset.loading = "false";
     }
-  });
+  }
+
+  googleButton.disabled = false;
+  googleButton.dataset.loading = "false";
+  googleButton.addEventListener("click", startGoogleSignIn);
+  googleButton.addEventListener("touchend", startGoogleSignIn, { passive: false });
 
   resetButton.addEventListener("click", async function () {
     if (isFilePreview()) {
@@ -405,7 +402,7 @@
     });
   });
 
-  googleSwitchButton.addEventListener("click", async function () {
+  googleSwitchButton.addEventListener("click", async function (event) {
     if (isFilePreview()) {
       setStatus("Google sign in cannot run from a file URL. Start the preview server and open " + previewLoginUrl() + ".", "error");
       return;
@@ -419,27 +416,8 @@
       } catch (storageError) {
         // Ignore storage failures.
       }
-      try {
-        try {
-          localStorage.setItem("pmp:googleRedirectStarted", "1");
-        } catch (storageError) {
-          // Continue even if localStorage is unavailable.
-        }
-        if (shouldUseRedirect()) {
-          await firebase.authModule.signInWithRedirect(firebase.auth, firebase.googleProvider);
-          return;
-        }
-        await firebase.authModule.signInWithPopup(firebase.auth, firebase.googleProvider);
-        try {
-          localStorage.removeItem("pmp:googleRedirectStarted");
-        } catch (storageError) {
-          // Ignore storage failures.
-        }
-        setStatus("Signed in with Google.", "success");
-        return;
-      } catch (error) {
-        setStatus(cleanError(error), "error");
-      }
+      await startGoogleSignIn(event);
+      return;
     }
     setMode("signin");
   });
