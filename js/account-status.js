@@ -5,6 +5,12 @@
   if (!nav) return;
 
   var accountLink = nav.querySelector('a[href="login.html"]');
+  var footerAccountLinks = Array.prototype.slice.call(document.querySelectorAll('.site-footer a[href="login.html"]'));
+  var authState = {
+    authModule: null,
+    auth: null,
+    user: null
+  };
   if (!accountLink) {
     accountLink = document.createElement("a");
     accountLink.href = "login.html";
@@ -14,6 +20,10 @@
 
   accountLink.classList.add("account-link");
   accountLink.textContent = "Login";
+
+  footerAccountLinks.forEach(function (link) {
+    link.dataset.accountFooter = "true";
+  });
 
   function shortEmail(email) {
     if (!email) return "Account";
@@ -40,15 +50,42 @@
       var app = appModule.getApps().length ? appModule.getApp() : appModule.initializeApp(config);
       var auth = authModule.getAuth(app);
 
+      authState.authModule = authModule;
+      authState.auth = auth;
+
       authModule.onAuthStateChanged(auth, function (user) {
+        authState.user = user;
         accountLink.classList.toggle("is-signed-in", Boolean(user));
         accountLink.textContent = user ? shortEmail(user.email) : "Login";
         accountLink.title = user ? "Signed in as " + user.email : "Login";
+
+        footerAccountLinks.forEach(function (link) {
+          link.textContent = user ? "Logout" : "Login";
+          link.href = user ? "#" : "login.html";
+          link.title = user ? "Sign out" : "Login";
+          link.classList.toggle("is-signed-in", Boolean(user));
+        });
       });
     } catch (error) {
       accountLink.textContent = "Login";
     }
   }
+
+  footerAccountLinks.forEach(function (link) {
+    link.addEventListener("click", async function (event) {
+      if (!authState.user || !authState.authModule || !authState.auth) {
+        return;
+      }
+
+      event.preventDefault();
+      link.textContent = "Signing out...";
+      try {
+        await authState.authModule.signOut(authState.auth);
+      } catch (error) {
+        link.textContent = "Logout";
+      }
+    });
+  });
 
   loadStatus();
 })();
