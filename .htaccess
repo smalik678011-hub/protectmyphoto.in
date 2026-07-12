@@ -1,0 +1,6 @@
+RewriteEngine On
+
+# Canonical host: keep every indexed URL on the non-www domain.
+RewriteCond %{HTTP_HOST} ^www\.protectmyphoto\.in$ [NC]
+RewriteRule ^(.*)$ https://protectmyphoto.in/$1 [L,R=301]
+
