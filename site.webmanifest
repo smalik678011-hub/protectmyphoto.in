@@ -4,8 +4,8 @@
   "description": "Privacy-first browser image tools.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f7f8f5",
-  "theme_color": "#126b55",
+  "background_color": "#17181A",
+  "theme_color": "#17181A",
   "icons": [
     {
       "src": "favicon.svg",
