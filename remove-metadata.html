@@ -1,33 +1,53 @@
 <!doctype html>
 <html lang="en">
-  <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Remove hidden EXIF metadata from photos by re-exporting images in your browser. A simple privacy tool for JPG, PNG, and WebP files."><title>Remove Image Metadata Online - EXIF Cleaner</title>
+  <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Remove hidden EXIF data from photos online by re-exporting images in your browser. Clean JPG, PNG, and WebP files privately."><title>Remove Photo Metadata Online | ProtectMyPhoto</title>
     <!-- SEO:START -->
     <meta name="robots" content="index, follow">
+    <meta name="keywords" content="remove metadata from photo, exif remover, image metadata cleaner, privacy photo tool, remove location from image">
     <link rel="canonical" href="https://protectmyphoto.in/remove-metadata.html">
     <meta property="og:site_name" content="ProtectMyPhoto">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Remove Image Metadata Online - EXIF Cleaner">
-    <meta property="og:description" content="Remove hidden EXIF metadata from photos by re-exporting images in your browser. A simple privacy tool for JPG, PNG, and WebP files.">
+    <meta property="og:title" content="Remove Photo Metadata Online | ProtectMyPhoto">
+    <meta property="og:description" content="Remove hidden EXIF data from photos online by re-exporting images in your browser. Clean JPG, PNG, and WebP files privately.">
+    <meta property="og:image" content="https://protectmyphoto.in/og-image.png">
     <meta property="og:url" content="https://protectmyphoto.in/remove-metadata.html">
-    <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="Remove Image Metadata Online - EXIF Cleaner">
-    <meta name="twitter:description" content="Remove hidden EXIF metadata from photos by re-exporting images in your browser. A simple privacy tool for JPG, PNG, and WebP files.">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Remove Photo Metadata Online | ProtectMyPhoto">
+    <meta name="twitter:description" content="Remove hidden EXIF data from photos online by re-exporting images in your browser. Clean JPG, PNG, and WebP files privately.">
+    <meta name="twitter:image" content="https://protectmyphoto.in/og-image.png">
     <meta name="theme-color" content="#17181A">
-    <!-- SEO:END --><link rel="stylesheet" href="css/styles.css">
+    <!-- SEO:END --><link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="css/styles.css">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="manifest" href="site.webmanifest"></head>
   <body data-tool="metadata">
     <header class="site-header"><a class="brand" href="index.html"><span class="brand-mark">P</span><span>ProtectMyPhoto</span></a><button class="nav-toggle" type="button" aria-expanded="false" aria-controls="siteNav">Menu</button><nav class="top-nav" id="siteNav" aria-label="Main navigation"><a href="tools.html">Tools</a><a href="compress-image.html">Compress</a><a href="privacy-policy.html">Privacy</a><a href="contact.html">Contact</a></nav></header>
     <main>
       <section class="hero tool-hero"><div class="page-title"><p class="eyebrow">Metadata remover</p><h1>Remove hidden photo metadata.</h1><p>Re-export photos to remove most EXIF details such as camera, date, and location metadata.</p></div><div class="privacy-note"><strong>Privacy helper</strong><p>The tool creates a fresh image from pixels, not from original file metadata.</p></div></section>
-      <section class="tool-workspace"><div class="tool-panel"><h2>Upload image</h2><div class="upload-zone" data-upload-zone><input data-file-input type="file" accept="image/jpeg,image/png,image/webp" hidden><button class="primary-action" data-choose-file type="button">Select image</button><p>JPG, PNG, or WebP up to 12 MB</p></div><div class="status-panel" data-status><h3>Status</h3><p>No image selected yet.</p></div><div class="preview-shell" data-preview hidden><div class="preview-frame"><img data-preview-image alt="Selected image preview"></div><div class="control-grid"><label>Output <select data-output-format><option value="image/jpeg">JPG</option><option value="image/png">PNG</option><option value="image/webp">WebP</option></select></label><label>Quality <input data-quality type="range" min="0.6" max="0.95" step="0.05" value="0.9"></label></div><div class="action-row"><button class="primary-action" data-run-tool type="button">Download clean image</button><button class="ghost-action" data-clear type="button">Clear</button></div></div></div><aside class="side-panel"><h2>Important</h2><p>This removes metadata by drawing the image to a browser canvas and exporting a new file. It is suitable for common photos, but always review sensitive files before sharing.</p></aside></section>
+      <section class="tool-workspace"><div class="tool-panel"><h2>Upload image</h2><div class="upload-zone" data-upload-zone><input data-file-input type="file" accept="image/jpeg,image/png,image/webp" hidden><button class="primary-action" data-choose-file type="button">Select image</button><p>JPG, PNG, or WebP up to 12 MB</p></div><div class="status-panel" data-status><h3>Status</h3><p>No image selected yet.</p></div><div class="preview-shell" data-preview hidden><div class="preview-frame"><img data-preview-image alt="Selected image preview" width="640" height="420"></div><div class="control-grid"><label>Output <select data-output-format><option value="image/jpeg">JPG</option><option value="image/png">PNG</option><option value="image/webp">WebP</option></select></label><label>Quality <input data-quality type="range" min="0.6" max="0.95" step="0.05" value="0.9"></label></div><div class="action-row"><button class="primary-action" data-run-tool type="button">Download clean image</button><button class="ghost-action" data-clear type="button">Clear</button></div></div></div><aside class="side-panel"><h2>Important</h2><p>This removes metadata by drawing the image to a browser canvas and exporting a new file. It is suitable for common photos, but always review sensitive files before sharing.</p></aside></section>
       <section class="guide-section"><h2>What metadata can reveal</h2><p>Photos can contain hidden details such as camera model, date, and sometimes location data. This tool creates a fresh exported image from the visible pixels, which removes most common embedded metadata.</p></section>
       <section class="related-section"><h2>Related tools</h2><div class="related-grid"><a class="related-link" href="compress-image.html"><strong>Compress Image</strong><span>Reduce size while re-exporting.</span></a><a class="related-link" href="convert-image.html"><strong>Convert Image</strong><span>Change output format.</span></a><a class="related-link" href="resize-image.html"><strong>Resize Image</strong><span>Resize and create a fresh file.</span></a></div></section>
-    </main>
+    
+      <section class="guide-section seo-guide" aria-labelledby="seoGuideTitle">
+        <h2 id="seoGuideTitle">Remove hidden EXIF metadata from photos</h2>
+        <p>remove photo metadata online is useful when an application form, school portal, government document page, job form, or daily sharing workflow asks for a specific image result. ProtectMyPhoto keeps the workflow simple: choose a file, adjust the controls, preview the result, and download the final file from your browser.</p>
+        <p>Privacy is the main product promise. The current MVP performs image work locally wherever possible, so your personal photo, signature, document scan, or stamp design does not need to be uploaded to a server for normal editing. This is especially helpful for Indian users preparing passport photos, exam forms, Aadhaar-style document copies, certificates, and mobile camera photos.</p>
+        <p>For best results, first check the official requirement from the form you are filling. Note the accepted format, pixel size, background color, and KB limit. Then use this tool with related tools like compression, resizing, conversion, PDF export, or metadata removal to prepare a clean final file.</p>
+      </section>
+      <section class="faq-section seo-faq" aria-labelledby="seoFaqTitle">
+        <h2 id="seoFaqTitle">Frequently asked questions</h2>
+        <details><summary>What metadata can be removed?</summary><p>Re-exporting usually strips hidden camera, device, and location EXIF data from common photo files.</p></details><details><summary>Is metadata removal guaranteed?</summary><p>The tool removes typical image metadata by creating a clean export, but always verify highly sensitive files before sharing.</p></details><details><summary>Does this reduce photo quality?</summary><p>It may re-encode the image. Use a high quality setting when detail matters.</p></details><details><summary>Is the EXIF cleaner private?</summary><p>Yes. The file is handled in your browser, not uploaded to a server.</p></details>
+      </section>
+      <section class="related-section seo-related" aria-labelledby="seoRelatedTitle">
+        <h2 id="seoRelatedTitle">More related tools</h2>
+        <div class="related-grid"><a class="related-link" href="compress-image.html"><strong>Compress Image Online Free</strong><span>Open this related private browser tool.</span></a><a class="related-link" href="convert-image.html"><strong>Convert Image to JPG PNG WebP</strong><span>Open this related private browser tool.</span></a><a class="related-link" href="white-background-photo.html"><strong>White Background Photo Maker</strong><span>Open this related private browser tool.</span></a></div>
+      </section>
+</main>
     <footer class="site-footer"><div><a class="brand footer-brand" href="index.html"><span class="brand-mark">P</span><span>ProtectMyPhoto</span></a><p>Private browser image tools.</p></div><nav aria-label="Footer navigation"><a href="tools.html">Tools</a><a href="privacy-policy.html">Privacy</a><a href="terms.html">Terms</a><a href="contact.html">Contact</a></nav><p><a href="mailto:admin@protectmyphoto.in">admin@protectmyphoto.in</a></p></footer>
-    <script src="js/site.js"></script><script src="js/toolkit-core.js"></script><script src="js/toolkit.js"></script>
-      <script src="js/schema.js"></script>
-    <script src="js/account-status.js?v=2" type="module"></script>
+    <script defer src="js/site.js"></script><script defer src="js/toolkit-core.js"></script><script defer src="js/toolkit.js"></script>
+      <script defer src="js/schema.js"></script>
+    <script defer src="js/account-status.js?v=2" type="module"></script>
   </body>
 </html>
 

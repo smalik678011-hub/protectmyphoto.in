@@ -47,13 +47,13 @@
 
   if (toolPages[path]) {
     graph.push({
-      "@type": "WebApplication",
+      "@type": "SoftwareApplication",
       "@id": currentUrl + "#app",
-      "name": toolPages[path],
+      "name": toolPages[path] + " - ProtectMyPhoto",
       "url": currentUrl,
       "description": pageDescription ? pageDescription.content : pageTitle,
-      "applicationCategory": "MultimediaApplication",
-      "operatingSystem": "Any",
+      "applicationCategory": "PhotoApplication",
+      "operatingSystem": "Any (Browser-based)",
       "isAccessibleForFree": true,
       "browserRequirements": "Requires a modern browser with JavaScript enabled.",
       "creator": { "@id": baseUrl + "/#organization" },
@@ -65,7 +65,7 @@
     });
   }
 
-  if (path === "faq.html") {
+  if (document.querySelector(".faq-section details")) {
     graph.push({
       "@type": "FAQPage",
       "@id": currentUrl + "#faq",
