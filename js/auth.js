@@ -52,6 +52,11 @@
     return /Android|webOS|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(ua) || (touchDevice && smallScreen);
   }
 
+  function isInAppBrowser() {
+    var ua = navigator.userAgent || "";
+    return /FBAN|FBAV|Instagram|Line\/|WhatsApp|MicroMessenger|; wv\)/i.test(ua);
+  }
+
   function shouldUseRedirectSignIn() {
     return isMobileBrowser() || isIosBrowser() || isSafariBrowser();
   }
@@ -285,14 +290,19 @@
     }
     rememberDebug("Checking Google redirect result.");
     firebase.authModule.getRedirectResult(firebase.auth).then(function (result) {
-      clearGoogleRedirectStarted();
       if (result && result.user) {
+        clearGoogleRedirectStarted();
         rememberDebug("Redirect result returned signed-in user.");
         showSignedIn(result.user);
         setStatus("Signed in with Google.", "success");
       } else {
         rememberDebug("Redirect result is empty.");
-        setStatus("Sign in to manage account preferences. Tools still work without login.", "info");
+        if (hasGoogleRedirectStarted()) {
+          setStatus("Google sign-in didn't complete. This can happen if the browser blocked storage during redirect. Please try again, and use Chrome or Safari directly (not an in-app browser).", "error");
+        } else {
+          setStatus("Sign in to manage account preferences. Tools still work without login.", "info");
+        }
+        clearGoogleRedirectStarted();
       }
     }).catch(function (error) {
       clearGoogleRedirectStarted();
@@ -364,6 +374,10 @@
   async function startGoogleSignIn(event) {
     if (event) event.preventDefault();
     if (googleSignInStarted) return;
+    if (isInAppBrowser()) {
+      setStatus("Google sign-in doesn't work inside this app's built-in browser. Tap the menu (\u22EE or \u22EF) and choose 'Open in Chrome' or 'Open in Safari', then sign in again.", "error");
+      return;
+    }
     rememberDebug("Google button tapped.");
 
     if (isFilePreview()) {
@@ -388,19 +402,10 @@
     }
 
     try {
-      if (shouldUseRedirectSignIn()) {
-        setGoogleRedirectStarted();
-        setStatus("Redirecting to Google sign in...", "info");
-        rememberDebug("Starting Google redirect.");
-        await firebase.authModule.signInWithRedirect(firebase.auth, firebase.googleProvider);
-        return;
-      }
-
       clearGoogleRedirectStarted();
       setStatus("Opening Google sign in...", "info");
       rememberDebug("Starting Google popup.");
       var credential = await firebase.authModule.signInWithPopup(firebase.auth, firebase.googleProvider);
-      clearGoogleRedirectStarted();
       if (credential && credential.user) {
         showSignedIn(credential.user);
         setStatus("Signed in with Google.", "success");
@@ -410,11 +415,26 @@
         setStatus("Google sign in finished, but no account was returned. Please try once more.", "error");
       }
     } catch (error) {
-      rememberDebug("Google sign-in error: " + errorSummary(error));
-      clearGoogleRedirectStarted();
-      if (error && (error.code === "auth/popup-blocked" || error.code === "auth/popup-closed-by-user")) {
-        setStatus("Google popup was blocked or closed. Please allow popups for ProtectMyPhoto and try again.", "error");
+      var code = errorCode(error);
+      var shouldFallbackToRedirect = code === "auth/popup-blocked" ||
+        code === "auth/operation-not-supported-in-this-environment" ||
+        code === "auth/cancelled-popup-request";
+
+      if (shouldFallbackToRedirect) {
+        try {
+          setGoogleRedirectStarted();
+          setStatus("Redirecting to Google sign in...", "info");
+          rememberDebug("Popup unavailable, falling back to redirect.");
+          await firebase.authModule.signInWithRedirect(firebase.auth, firebase.googleProvider);
+          return;
+        } catch (redirectError) {
+          clearGoogleRedirectStarted();
+          setStatus(cleanError(redirectError), "error");
+        }
+      } else if (code === "auth/popup-closed-by-user") {
+        setStatus("Google sign-in window was closed. Please try again.", "error");
       } else {
+        rememberDebug("Google sign-in error: " + errorSummary(error));
         setStatus(cleanError(error), "error");
       }
       googleSignInStarted = false;
