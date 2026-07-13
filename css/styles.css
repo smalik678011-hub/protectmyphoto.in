@@ -4095,7 +4095,7 @@ body[data-tool="passport"] .passport-actions {
 }
 
 @media (max-width: 560px) {
-  body[data-tool="passport"] .passport-preview-sticky {
+body[data-tool="passport"] .passport-preview-sticky {
     top: 74px;
   }
 
@@ -4111,4 +4111,30 @@ body[data-tool="passport"] .passport-actions {
   body[data-tool="passport"] .passport-controls {
     padding: 12px;
   }
+}
+
+/* Login header account pill contrast guard. */
+.login-page .top-nav .account-link {
+  border: 1px solid var(--login-line);
+  background: rgba(255, 255, 255, 0.68);
+  color: var(--login-ink);
+  box-shadow: none;
+}
+
+.login-page .top-nav .account-link:hover {
+  border-color: #d8c8b8;
+  background: #fffaf3;
+  color: var(--login-ink);
+}
+
+.login-page .top-nav .account-link.is-signed-in {
+  border-color: rgba(15, 159, 110, 0.28);
+  background: rgba(15, 159, 110, 0.12);
+  color: #057a55;
+}
+
+.login-page .top-nav .account-link.is-signed-in:hover {
+  border-color: rgba(15, 159, 110, 0.42);
+  background: rgba(15, 159, 110, 0.18);
+  color: #056648;
 }
