@@ -4421,3 +4421,43 @@ body.stamp-page .stamp-toast[data-state="error"] {
   background: rgba(217, 50, 36, 0.08);
   color: #9e241a;
 }
+
+body.stamp-page .use-case-card {
+  border: 1px solid var(--stamp-light-line);
+  background:
+    radial-gradient(circle at 90% 6%, rgba(15, 159, 110, 0.1), transparent 16rem),
+    #fffefd;
+  color: var(--stamp-light-ink);
+  box-shadow: 0 16px 40px rgba(32, 24, 22, 0.08);
+}
+
+body.stamp-page .use-case-card h2 {
+  color: var(--stamp-light-ink);
+}
+
+body.stamp-page .use-case-card p {
+  color: var(--stamp-light-muted);
+}
+
+body.stamp-page .step-list li {
+  color: var(--stamp-light-muted);
+}
+
+body.stamp-page .step-list span {
+  border: 1px solid rgba(245, 165, 36, 0.28);
+  background: rgba(245, 165, 36, 0.14);
+  color: #815114;
+}
+
+body.stamp-page .faq-section details {
+  background: #fffefd;
+}
+
+body.stamp-page .faq-section details[open] {
+  background: #fffaf3;
+}
+
+body.stamp-page .faq-section summary::after {
+  background: rgba(245, 165, 36, 0.18);
+  color: var(--stamp-light-ink);
+}
