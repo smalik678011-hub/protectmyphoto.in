@@ -57,8 +57,7 @@
   }
 
   function shouldUseSameDomainAuth() {
-    var host = window.location.hostname;
-    return shouldUseRedirectSignIn() && (host === "protectmyphoto.in" || host === "www.protectmyphoto.in");
+    return false;
   }
 
   function hasGoogleRedirectStarted() {

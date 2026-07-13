@@ -19,6 +19,7 @@
   var previewImage = document.querySelector("[data-preview-image]");
   var runButton = document.querySelector("[data-run-tool]");
   var clearButton = document.querySelector("[data-clear]");
+  var driveButton = null;
   var statsBox = null;
 
   function qs(selector) {
@@ -326,6 +327,28 @@
     }).catch(function (error) {
       clearAll();
       setStatus(error.message, "error");
+    });
+  }
+
+  function ensureDriveButton() {
+    if (!chooseFile || driveButton) {
+      return;
+    }
+
+    driveButton = document.querySelector("[data-drive-file]");
+
+    if (!driveButton) {
+      driveButton = document.createElement("button");
+      driveButton.className = "ghost-action drive-action";
+      driveButton.type = "button";
+      driveButton.setAttribute("data-drive-file", "");
+      driveButton.textContent = "Choose from Google Drive";
+      chooseFile.insertAdjacentElement("afterend", driveButton);
+    }
+
+    driveButton.addEventListener("click", function () {
+      setStatus("Choose Google Drive in the file picker, then select your image. Your file will still be processed in this browser.", "");
+      fileInput.click();
     });
   }
 
@@ -682,6 +705,7 @@
 
   if (chooseFile && fileInput && runButton) {
     runButton.dataset.originalText = runButton.textContent;
+    ensureDriveButton();
 
     chooseFile.addEventListener("click", function () {
       fileInput.click();

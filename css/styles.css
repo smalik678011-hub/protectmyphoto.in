@@ -1129,6 +1129,28 @@ a:focus-visible {
   background: var(--color-bg-elevated);
 }
 
+.upload-zone .drive-action {
+  width: min(100%, 280px);
+  min-height: 46px;
+  margin-top: 2px;
+  border-color: rgba(232, 163, 61, 0.38);
+  color: var(--color-text-primary);
+}
+
+.upload-zone .drive-action::before {
+  content: "Drive";
+  display: inline-grid;
+  min-width: 42px;
+  min-height: 24px;
+  margin-right: 4px;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--color-bg-input);
+  color: var(--color-accent);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
 .upload-zone p,
 .status-panel p,
 .hint-text,
