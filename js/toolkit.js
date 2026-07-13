@@ -21,9 +21,14 @@
   var clearButton = document.querySelector("[data-clear]");
   var driveButton = null;
   var statsBox = null;
+  var passportDrag = { active: false, x: 0, y: 0 };
 
   function qs(selector) {
     return document.querySelector(selector);
+  }
+
+  function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
   }
 
   function setStatus(message, type) {
@@ -518,6 +523,61 @@
     });
   }
 
+  function setPassportNumber(selector, value) {
+    var control = qs(selector);
+    if (!control) {
+      return;
+    }
+
+    var min = control.min === "" ? -Infinity : Number(control.min);
+    var max = control.max === "" ? Infinity : Number(control.max);
+    control.value = String(clamp(value, min, max));
+  }
+
+  function adjustPassport(action) {
+    var zoom = qs("[data-zoom]");
+    var offsetX = qs("[data-offset-x]");
+    var offsetY = qs("[data-offset-y]");
+
+    if (!zoom || !offsetX || !offsetY) {
+      return;
+    }
+
+    if (action === "zoomIn") {
+      setPassportNumber("[data-zoom]", (Number(zoom.value) || 1) + 0.1);
+    } else if (action === "zoomOut") {
+      setPassportNumber("[data-zoom]", (Number(zoom.value) || 1) - 0.1);
+    } else if (action === "up") {
+      setPassportNumber("[data-offset-y]", (Number(offsetY.value) || 0) - 12);
+    } else if (action === "down") {
+      setPassportNumber("[data-offset-y]", (Number(offsetY.value) || 0) + 12);
+    } else if (action === "left") {
+      setPassportNumber("[data-offset-x]", (Number(offsetX.value) || 0) - 12);
+    } else if (action === "right") {
+      setPassportNumber("[data-offset-x]", (Number(offsetX.value) || 0) + 12);
+    } else if (action === "reset") {
+      setPassportNumber("[data-zoom]", 1);
+      setPassportNumber("[data-offset-x]", 0);
+      setPassportNumber("[data-offset-y]", 0);
+    }
+
+    drawPassportPreview();
+  }
+
+  function movePassportByCanvasDelta(canvas, deltaX, deltaY) {
+    var offsetX = qs("[data-offset-x]");
+    var offsetY = qs("[data-offset-y]");
+    var rect = canvas.getBoundingClientRect();
+
+    if (!offsetX || !offsetY || !rect.width || !rect.height) {
+      return;
+    }
+
+    setPassportNumber("[data-offset-x]", (Number(offsetX.value) || 0) + deltaX * canvas.width / rect.width);
+    setPassportNumber("[data-offset-y]", (Number(offsetY.value) || 0) + deltaY * canvas.height / rect.height);
+    drawPassportPreview();
+  }
+
   function runCrop() {
     var cropX = Math.max(0, Number(qs("[data-crop-x]").value) || 0);
     var cropY = Math.max(0, Number(qs("[data-crop-y]").value) || 0);
@@ -764,6 +824,51 @@
         control.addEventListener("change", drawPassportPreview);
       }
     });
+
+    Array.prototype.slice.call(document.querySelectorAll("[data-passport-adjust]")).forEach(function (button) {
+      button.addEventListener("click", function () {
+        adjustPassport(button.getAttribute("data-passport-adjust"));
+      });
+    });
+
+    var passportCanvas = qs("[data-passport-canvas]");
+    if (passportCanvas) {
+      passportCanvas.addEventListener("pointerdown", function (event) {
+        if (!state.image) {
+          return;
+        }
+
+        passportDrag.active = true;
+        passportDrag.x = event.clientX;
+        passportDrag.y = event.clientY;
+        passportCanvas.setPointerCapture(event.pointerId);
+      });
+
+      passportCanvas.addEventListener("pointermove", function (event) {
+        if (!passportDrag.active) {
+          return;
+        }
+
+        movePassportByCanvasDelta(passportCanvas, event.clientX - passportDrag.x, event.clientY - passportDrag.y);
+        passportDrag.x = event.clientX;
+        passportDrag.y = event.clientY;
+      });
+
+      ["pointerup", "pointercancel", "pointerleave"].forEach(function (eventName) {
+        passportCanvas.addEventListener(eventName, function () {
+          passportDrag.active = false;
+        });
+      });
+
+      passportCanvas.addEventListener("wheel", function (event) {
+        if (!state.image) {
+          return;
+        }
+
+        event.preventDefault();
+        adjustPassport(event.deltaY < 0 ? "zoomIn" : "zoomOut");
+      }, { passive: false });
+    }
   }
 
   if (tool === "background") {
