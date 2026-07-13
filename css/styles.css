@@ -4138,3 +4138,286 @@ body[data-tool="passport"] .passport-preview-sticky {
   background: rgba(15, 159, 110, 0.18);
   color: #056648;
 }
+
+/* Stamp maker light theme reset: sober, readable, and colour-safe. */
+body.stamp-page {
+  --stamp-light-ink: #201816;
+  --stamp-light-muted: #6f6860;
+  --stamp-light-soft: #8a8177;
+  --stamp-light-paper: #fffaf3;
+  --stamp-light-surface: #fbfaf7;
+  --stamp-light-card: #fffefd;
+  --stamp-light-line: #e8ddd0;
+  --stamp-light-line-strong: #d8c8b8;
+  --stamp-light-orange: #f65a1f;
+  --stamp-light-amber: #f5a524;
+  --stamp-light-emerald: #0f9f6e;
+  background:
+    radial-gradient(circle at 0% 2%, rgba(246, 90, 31, 0.08), transparent 28rem),
+    radial-gradient(circle at 100% 0%, rgba(15, 159, 110, 0.08), transparent 30rem),
+    var(--stamp-light-surface);
+  color: var(--stamp-light-ink);
+}
+
+body.stamp-page .site-header,
+body.stamp-page .stamp-hero,
+body.stamp-page .stamp-editor-shell,
+body.stamp-page .stamp-document-section,
+body.stamp-page .section-band,
+body.stamp-page .content-split,
+body.stamp-page .faq-section,
+body.stamp-page .related-section,
+body.stamp-page .site-footer {
+  border: 1px solid var(--stamp-light-line);
+  background: rgba(255, 250, 243, 0.92);
+  color: var(--stamp-light-ink);
+  box-shadow: 0 18px 52px rgba(32, 24, 22, 0.08);
+}
+
+body.stamp-page .site-header {
+  backdrop-filter: blur(14px);
+}
+
+body.stamp-page .brand,
+body.stamp-page .top-nav a,
+body.stamp-page .footer-brand,
+body.stamp-page .site-footer a,
+body.stamp-page h1,
+body.stamp-page h2,
+body.stamp-page h3,
+body.stamp-page strong,
+body.stamp-page summary,
+body.stamp-page label,
+body.stamp-page .stamp-preview-top,
+body.stamp-page .stamp-template-card strong,
+body.stamp-page .stamp-example-grid strong,
+body.stamp-page .related-link strong,
+body.stamp-page .faq-section summary,
+body.stamp-page .guide-section li {
+  color: var(--stamp-light-ink);
+}
+
+body.stamp-page p,
+body.stamp-page li,
+body.stamp-page .hint-text,
+body.stamp-page .mini-note,
+body.stamp-page .stamp-preview-top span,
+body.stamp-page .section-heading p,
+body.stamp-page .site-footer p,
+body.stamp-page .stamp-template-card small {
+  color: var(--stamp-light-muted);
+}
+
+body.stamp-page .brand-mark {
+  border-radius: 14px;
+  background: var(--stamp-light-orange);
+  color: #fffaf3;
+  box-shadow: 0 14px 30px rgba(246, 90, 31, 0.22);
+}
+
+body.stamp-page .eyebrow,
+body.stamp-page .stamp-hero .eyebrow {
+  border: 1px solid rgba(245, 165, 36, 0.32);
+  background: rgba(245, 165, 36, 0.13);
+  color: #815114;
+  box-shadow: none;
+}
+
+body.stamp-page .eyebrow::before,
+body.stamp-page .stamp-hero .eyebrow::before {
+  background: var(--stamp-light-amber);
+  box-shadow: 0 0 0 7px rgba(245, 165, 36, 0.16);
+}
+
+body.stamp-page .stamp-hero {
+  background:
+    radial-gradient(circle at 88% 12%, rgba(15, 159, 110, 0.13), transparent 26rem),
+    radial-gradient(circle at 0% 0%, rgba(246, 90, 31, 0.1), transparent 25rem),
+    linear-gradient(135deg, #fffaf3, #fbfaf7);
+}
+
+body.stamp-page .stamp-hero h1 {
+  color: var(--stamp-light-ink);
+  text-shadow: none;
+}
+
+body.stamp-page .stamp-hero-copy > p {
+  color: var(--stamp-light-muted);
+}
+
+body.stamp-page .stamp-hero-preview {
+  border: 1px solid var(--stamp-light-line);
+  background:
+    linear-gradient(45deg, rgba(232, 221, 208, 0.42) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(232, 221, 208, 0.42) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(232, 221, 208, 0.42) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(232, 221, 208, 0.42) 75%),
+    #fffefd;
+  background-size: 24px 24px;
+  background-position: 0 0, 0 12px, 12px -12px, -12px 0;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.76), 0 18px 46px rgba(32, 24, 22, 0.1);
+}
+
+body.stamp-page .stamp-hero-preview canvas {
+  background: transparent;
+}
+
+body.stamp-page .stamp-controls,
+body.stamp-page .stamp-preview-card,
+body.stamp-page .document-controls,
+body.stamp-page .document-canvas-wrap,
+body.stamp-page .stamp-template-card,
+body.stamp-page .stamp-example-grid article,
+body.stamp-page .related-link,
+body.stamp-page .faq-section details {
+  border: 1px solid var(--stamp-light-line);
+  background: var(--stamp-light-card);
+  color: var(--stamp-light-ink);
+  box-shadow: 0 14px 34px rgba(32, 24, 22, 0.06);
+}
+
+body.stamp-page .stamp-controls details {
+  border: 1px solid var(--stamp-light-line);
+  background: #fffaf3;
+  color: var(--stamp-light-ink);
+}
+
+body.stamp-page .stamp-controls summary {
+  background: linear-gradient(180deg, rgba(255, 250, 243, 0.98), rgba(251, 250, 247, 0.94));
+  color: var(--stamp-light-ink);
+}
+
+body.stamp-page .stamp-controls details[open] summary {
+  border-bottom: 1px solid var(--stamp-light-line);
+}
+
+body.stamp-page input,
+body.stamp-page select,
+body.stamp-page textarea,
+body.stamp-page .control-grid input,
+body.stamp-page .control-grid select,
+body.stamp-page .document-controls input,
+body.stamp-page .document-controls select {
+  border: 1px solid var(--stamp-light-line-strong);
+  background: #fffefd;
+  color: var(--stamp-light-ink);
+}
+
+body.stamp-page input[type="range"] {
+  accent-color: var(--stamp-light-orange);
+}
+
+body.stamp-page input[type="checkbox"] {
+  accent-color: var(--stamp-light-emerald);
+}
+
+body.stamp-page input[type="color"] {
+  min-height: 44px;
+  padding: 4px;
+  background: #fffefd;
+}
+
+body.stamp-page input:focus,
+body.stamp-page select:focus,
+body.stamp-page textarea:focus {
+  border-color: var(--stamp-light-amber);
+  box-shadow: 0 0 0 4px rgba(245, 165, 36, 0.18);
+  outline: none;
+}
+
+body.stamp-page .primary-action,
+body.stamp-page .button.primary-action,
+body.stamp-page button.primary-action {
+  border: 1px solid var(--stamp-light-orange);
+  background: var(--stamp-light-orange);
+  color: #fffaf3;
+  box-shadow: 0 14px 30px rgba(246, 90, 31, 0.2);
+}
+
+body.stamp-page .primary-action:hover,
+body.stamp-page .button.primary-action:hover,
+body.stamp-page button.primary-action:hover {
+  border-color: #df4610;
+  background: #df4610;
+  color: #fffaf3;
+}
+
+body.stamp-page .ghost-action,
+body.stamp-page .button.ghost-action,
+body.stamp-page button.ghost-action,
+body.stamp-page .mini-template-row button,
+body.stamp-page .template-filter-row button,
+body.stamp-page .shape-grid button {
+  border: 1px solid var(--stamp-light-line);
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--stamp-light-ink);
+  box-shadow: none;
+}
+
+body.stamp-page .ghost-action:hover,
+body.stamp-page .button.ghost-action:hover,
+body.stamp-page button.ghost-action:hover,
+body.stamp-page .mini-template-row button:hover,
+body.stamp-page .template-filter-row button:hover,
+body.stamp-page .shape-grid button:hover,
+body.stamp-page .shape-grid button.is-active {
+  border-color: var(--stamp-light-line-strong);
+  background: #fffaf3;
+  color: var(--stamp-light-ink);
+}
+
+body.stamp-page .danger-action {
+  border: 1px solid rgba(217, 50, 36, 0.28);
+  background: rgba(217, 50, 36, 0.08);
+  color: #9e241a;
+}
+
+body.stamp-page .ink-swatches button {
+  border: 1px solid var(--stamp-light-line);
+  background: #fffefd;
+  color: var(--stamp-light-ink);
+}
+
+body.stamp-page .ink-swatches button::before {
+  border: 1px solid rgba(32, 24, 22, 0.16);
+  background: var(--swatch);
+}
+
+body.stamp-page [data-stamp-canvas],
+body.stamp-page [data-document-canvas] {
+  border: 1px solid var(--stamp-light-line);
+  background:
+    linear-gradient(45deg, rgba(232, 221, 208, 0.38) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(232, 221, 208, 0.38) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(232, 221, 208, 0.38) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(232, 221, 208, 0.38) 75%),
+    #fffefd;
+  background-size: 24px 24px;
+  background-position: 0 0, 0 12px, 12px -12px, -12px 0;
+}
+
+body.stamp-page .stamp-bottom-bar,
+body.stamp-page .stamp-toolbar,
+body.stamp-page .view-actions,
+body.stamp-page .layer-actions {
+  border-color: var(--stamp-light-line);
+  background: transparent;
+}
+
+body.stamp-page .stamp-toast {
+  border: 1px solid var(--stamp-light-line);
+  background: #fffefd;
+  color: var(--stamp-light-ink);
+}
+
+body.stamp-page .stamp-toast[data-state="success"] {
+  border-color: rgba(15, 159, 110, 0.28);
+  background: rgba(15, 159, 110, 0.1);
+  color: #057a55;
+}
+
+body.stamp-page .stamp-toast[data-state="error"] {
+  border-color: rgba(217, 50, 36, 0.28);
+  background: rgba(217, 50, 36, 0.08);
+  color: #9e241a;
+}
