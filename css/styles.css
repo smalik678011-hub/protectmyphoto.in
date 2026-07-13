@@ -913,20 +913,6 @@ a:focus-visible {
   transform: translateY(-3px) rotate(-1deg) scale(1.02);
 }
 
-.tool-visual rect {
-  fill: var(--color-bg-elevated);
-  stroke: var(--color-bg-elevated);
-  stroke-width: 1.5;
-}
-
-.tool-visual path {
-  fill: rgba(246, 90, 31, 0.84);
-}
-
-.tool-visual .visual-card-alt {
-  fill: var(--color-bg-elevated);
-}
-
 .tool-visual .visual-accent,
 .tool-visual .visual-line,
 .tool-visual .visual-check {
@@ -946,15 +932,11 @@ a:focus-visible {
 }
 
 .tool-visual .visual-dash {
-  fill: none;
-  stroke: rgba(37, 99, 235, 0.4);
   stroke-width: 2;
   stroke-dasharray: 6 6;
 }
 
 .tool-visual .visual-shield {
-  fill: var(--color-bg-elevated);
-  stroke: rgba(15, 159, 110, 0.72);
   stroke-width: 2;
 }
 
@@ -964,8 +946,6 @@ a:focus-visible {
 }
 
 .tool-visual .visual-face {
-  fill: var(--color-bg-elevated);
-  stroke: var(--color-bg-elevated);
   stroke-width: 1.5;
 }
 
@@ -2653,11 +2633,6 @@ body::before {
 .tool-visual {
   opacity: 0.92;
   transform-origin: center;
-}
-
-.tool-visual rect,
-.tool-visual circle {
-  stroke: rgba(32, 24, 22, 0.14);
 }
 
 .tool-visual .visual-accent {
