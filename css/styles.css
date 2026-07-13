@@ -3910,3 +3910,89 @@ textarea::placeholder {
     transition: none;
   }
 }
+
+/* Custom Stamp Maker: brand-light hero with a dark preview board. */
+.stamp-page .stamp-hero {
+  --stamp-ink: #201816;
+  --stamp-muted: #6f6860;
+  --stamp-border: #e8ddd0;
+  --stamp-soft-border: #d8c8b8;
+  --stamp-paper: #fffaf3;
+  --stamp-surface: #fbfaf7;
+  --stamp-amber: #f5a524;
+  --stamp-orange: #f65a1f;
+  --stamp-emerald: #0f9f6e;
+  border-color: var(--stamp-border);
+  background:
+    radial-gradient(circle at 90% 12%, rgba(15, 159, 110, 0.16), transparent 26rem),
+    radial-gradient(circle at 0% 0%, rgba(246, 90, 31, 0.12), transparent 25rem),
+    linear-gradient(135deg, var(--stamp-paper), var(--stamp-surface));
+  color: var(--stamp-ink);
+}
+
+.stamp-page .stamp-hero h1 {
+  color: var(--stamp-ink);
+  font-weight: 800;
+  text-shadow: none;
+}
+
+.stamp-page .stamp-hero-copy > p {
+  color: var(--stamp-muted);
+}
+
+.stamp-page .stamp-hero .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  padding: 8px 13px;
+  border: 1px solid rgba(245, 165, 36, 0.28);
+  border-radius: 999px;
+  background: rgba(245, 165, 36, 0.13);
+  color: #815114;
+  box-shadow: none;
+}
+
+.stamp-page .stamp-hero .eyebrow::before {
+  background: var(--stamp-amber);
+  box-shadow: 0 0 0 7px rgba(245, 165, 36, 0.16);
+}
+
+.stamp-page .stamp-hero .mini-note {
+  color: #7d7268;
+}
+
+.stamp-page .stamp-hero .primary-action {
+  border-color: var(--stamp-orange);
+  background: var(--stamp-orange);
+  color: var(--stamp-paper);
+  box-shadow: 0 18px 34px rgba(246, 90, 31, 0.22);
+}
+
+.stamp-page .stamp-hero .primary-action:hover {
+  border-color: #df4610;
+  background: #df4610;
+  color: var(--stamp-paper);
+}
+
+.stamp-page .stamp-hero .ghost-action {
+  border-color: var(--stamp-border);
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--stamp-ink);
+}
+
+.stamp-page .stamp-hero .ghost-action:hover {
+  border-color: var(--stamp-soft-border);
+  background: var(--stamp-paper);
+  color: var(--stamp-ink);
+}
+
+.stamp-page .stamp-hero-preview {
+  border-color: rgba(32, 24, 22, 0.28);
+  background: #202124;
+  box-shadow: 0 24px 64px rgba(32, 24, 22, 0.22);
+}
+
+.stamp-page .stamp-hero-preview canvas {
+  background: #202124;
+}
