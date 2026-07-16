@@ -4461,3 +4461,50 @@ body.stamp-page .faq-section summary::after {
   background: rgba(245, 165, 36, 0.18);
   color: var(--stamp-light-ink);
 }
+
+/* Stamp maker final contrast guard: keep the business tool sober and readable. */
+body.stamp-page .use-case-card,
+body.stamp-page .content-split .use-case-card,
+body.stamp-page .stamp-preview-card,
+body.stamp-page .document-canvas-wrap,
+body.stamp-page .stamp-controls {
+  border-color: var(--stamp-light-line);
+  background:
+    radial-gradient(circle at 92% 6%, rgba(15, 159, 110, 0.08), transparent 16rem),
+    var(--stamp-light-card);
+  color: var(--stamp-light-ink);
+}
+
+body.stamp-page .use-case-card h2,
+body.stamp-page .use-case-card h3,
+body.stamp-page .stamp-preview-card h2,
+body.stamp-page .stamp-controls h2,
+body.stamp-page .stamp-controls summary {
+  color: var(--stamp-light-ink);
+}
+
+body.stamp-page .use-case-card p,
+body.stamp-page .stamp-preview-card p,
+body.stamp-page .stamp-controls p,
+body.stamp-page .stamp-controls small {
+  color: var(--stamp-light-muted);
+}
+
+body.stamp-page .stamp-preview-panel,
+body.stamp-page .stamp-preview-top,
+body.stamp-page .stamp-toolbar,
+body.stamp-page .stamp-bottom-bar {
+  border-color: var(--stamp-light-line);
+  background: rgba(255, 250, 243, 0.68);
+  color: var(--stamp-light-ink);
+}
+
+body.stamp-page .stamp-preview-panel,
+body.stamp-page .stamp-preview-panel h2,
+body.stamp-page .stamp-preview-panel h3,
+body.stamp-page .stamp-preview-panel p,
+body.stamp-page .stamp-preview-panel span,
+body.stamp-page .stamp-preview-panel label,
+body.stamp-page .stamp-preview-panel small {
+  color: var(--stamp-light-ink);
+}

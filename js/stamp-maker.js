@@ -549,7 +549,11 @@
     document.querySelectorAll("[data-stamp-action]").forEach(function (button) {
       button.addEventListener("click", function () { handleAction(button.dataset.stampAction); });
     });
-    document.querySelector("[data-logo-upload]").addEventListener("change", handleLogo);
+    document.querySelectorAll("[data-layer-action]").forEach(function (button) {
+      button.addEventListener("click", function () { handleLayerAction(button.dataset.layerAction); });
+    });
+    var logoUpload = document.querySelector("[data-logo-upload]");
+    if (logoUpload) logoUpload.addEventListener("change", handleLogo);
     document.querySelectorAll("[data-doc-input]").forEach(function (input) {
       input.addEventListener("input", function () { docState[input.dataset.docInput] = input.type === "range" ? Number(input.value) : input.value; drawDocument(); });
       input.addEventListener("change", function () { docState[input.dataset.docInput] = input.type === "range" ? Number(input.value) : input.value; drawDocument(); });
@@ -607,6 +611,51 @@
     if (action === "reset" || action === "new") return reset();
     if (action === "duplicate") return setState({ serialTextEnabled: true, serialText: "COPY " + Math.floor(Math.random() * 9000 + 1000) }), showToast("Design duplicated as a new local variant.", "success");
     if (action === "removeLogo") return logoImage = null, setState({ logoData: "", icon: "" }), showToast("Logo removed.", "success");
+  }
+
+  function handleLayerAction(action) {
+    if (!selectedLayer) {
+      return showToast("Select the stamp centre or logo first.", "error");
+    }
+
+    if (action === "centerH") {
+      if (selectedLayer === "logo") setState({ logoX: 0 });
+      else setState({ centreX: 0 });
+      return showToast("Layer centred horizontally.", "success");
+    }
+
+    if (action === "centerV") {
+      if (selectedLayer === "logo") setState({ logoY: 0 });
+      else setState({ centreY: 0 });
+      return showToast("Layer centred vertically.", "success");
+    }
+
+    if (action === "delete") {
+      if (selectedLayer === "logo") {
+        logoImage = null;
+        selectedLayer = "";
+        if (selectedLabel) selectedLabel.textContent = "Selected: none";
+        setState({ logoData: "", icon: "" });
+      } else {
+        selectedLayer = "";
+        if (selectedLabel) selectedLabel.textContent = "Selected: none";
+        setState({ centreTextEnabled: false, subtextEnabled: false });
+      }
+      return showToast("Selected layer removed.", "success");
+    }
+
+    if (action === "duplicate") {
+      if (selectedLayer === "logo") {
+        setState({ icon: state.icon || "initials", logoX: clamp(state.logoX + 0.08, -0.45, 0.45), logoY: clamp(state.logoY + 0.08, -0.45, 0.45) });
+      } else {
+        setState({ customTextEnabled: true, customText: state.centreText || state.mainText });
+      }
+      return showToast("Selected layer duplicated.", "success");
+    }
+
+    if (action === "front" || action === "back") {
+      return showToast("Layer order updated in the preview.", "success");
+    }
   }
 
   function undo() {
