@@ -6,7 +6,8 @@
   var state = {
     files: [],
     image: null,
-    previewUrl: null
+    previewUrl: null,
+    thumbnailUrls: []
   };
   var core = window.ProtectMyPhotoCore;
 
@@ -22,6 +23,7 @@
   var driveButton = null;
   var statsBox = null;
   var passportDrag = { active: false, x: 0, y: 0 };
+  var cropDrag = { active: false, mode: "move", startX: 0, startY: 0, startBox: null };
 
   function qs(selector) {
     return document.querySelector(selector);
@@ -255,6 +257,39 @@
     }
   }
 
+  function clearThumbnailUrls() {
+    state.thumbnailUrls.forEach(function (url) {
+      URL.revokeObjectURL(url);
+    });
+    state.thumbnailUrls = [];
+  }
+
+  function renderPdfThumbnails(files) {
+    var strip = qs("[data-pdf-thumbnails]");
+
+    if (!strip) {
+      return;
+    }
+
+    clearThumbnailUrls();
+    strip.innerHTML = "";
+
+    Array.prototype.slice.call(files || []).forEach(function (file, index) {
+      var url = URL.createObjectURL(file);
+      var item = document.createElement("figure");
+      var image = document.createElement("img");
+      var caption = document.createElement("figcaption");
+
+      state.thumbnailUrls.push(url);
+      image.src = url;
+      image.alt = "PDF image " + (index + 1) + " preview";
+      caption.textContent = index + 1;
+      item.appendChild(image);
+      item.appendChild(caption);
+      strip.appendChild(item);
+    });
+  }
+
   function clearAll() {
     state.files = [];
     state.image = null;
@@ -267,6 +302,13 @@
 
     if (previewImage) {
       previewImage.removeAttribute("src");
+    }
+
+    clearThumbnailUrls();
+
+    var thumbnailStrip = qs("[data-pdf-thumbnails]");
+    if (thumbnailStrip) {
+      thumbnailStrip.innerHTML = "";
     }
 
     if (preview) {
@@ -315,6 +357,9 @@
       state.image = image;
       setResizeDefaults(image);
       showPreview(selected[0]);
+      if (tool === "pdf") {
+        renderPdfThumbnails(selected);
+      }
       if (uploadZone) {
         uploadZone.classList.add("has-file");
       }
@@ -328,6 +373,8 @@
         drawPassportPreview();
       } else if (tool === "background") {
         drawBackgroundPreview();
+      } else if (tool === "crop") {
+        initCropBox();
       }
     }).catch(function (error) {
       clearAll();
@@ -578,11 +625,184 @@
     drawPassportPreview();
   }
 
+  function cropControls() {
+    return {
+      x: qs("[data-crop-x]"),
+      y: qs("[data-crop-y]"),
+      width: qs("[data-crop-width]"),
+      height: qs("[data-crop-height]"),
+      lock: qs("[data-crop-lock-aspect]"),
+      box: qs("[data-crop-box]"),
+      stage: qs("[data-crop-stage]"),
+      live: qs("[data-crop-live-preview]")
+    };
+  }
+
+  function getCropBox() {
+    var controls = cropControls();
+    var maxWidth = state.image ? state.image.naturalWidth : 0;
+    var maxHeight = state.image ? state.image.naturalHeight : 0;
+    var x = clamp(Math.round(Number(controls.x && controls.x.value) || 0), 0, Math.max(0, maxWidth - 20));
+    var y = clamp(Math.round(Number(controls.y && controls.y.value) || 0), 0, Math.max(0, maxHeight - 20));
+    var width = clamp(Math.round(Number(controls.width && controls.width.value) || maxWidth), 20, Math.max(20, maxWidth - x));
+    var height = clamp(Math.round(Number(controls.height && controls.height.value) || maxHeight), 20, Math.max(20, maxHeight - y));
+
+    return { x: x, y: y, width: width, height: height };
+  }
+
+  function setCropBox(box, keepRatio) {
+    var controls = cropControls();
+    var maxWidth = state.image ? state.image.naturalWidth : 0;
+    var maxHeight = state.image ? state.image.naturalHeight : 0;
+    var ratio = cropDrag.startBox && cropDrag.startBox.height ? cropDrag.startBox.width / cropDrag.startBox.height : 1;
+
+    box.x = Math.round(box.x);
+    box.y = Math.round(box.y);
+    box.width = Math.round(box.width);
+    box.height = Math.round(box.height);
+
+    if (keepRatio && box.width >= 20 && box.height >= 20) {
+      if (Math.abs(box.width - (cropDrag.startBox ? cropDrag.startBox.width : box.width)) >= Math.abs(box.height - (cropDrag.startBox ? cropDrag.startBox.height : box.height))) {
+        box.height = Math.round(box.width / ratio);
+      } else {
+        box.width = Math.round(box.height * ratio);
+      }
+    }
+
+    box.width = clamp(box.width, 20, maxWidth);
+    box.height = clamp(box.height, 20, maxHeight);
+    box.x = clamp(box.x, 0, Math.max(0, maxWidth - box.width));
+    box.y = clamp(box.y, 0, Math.max(0, maxHeight - box.height));
+
+    if (controls.x) controls.x.value = box.x;
+    if (controls.y) controls.y.value = box.y;
+    if (controls.width) controls.width.value = box.width;
+    if (controls.height) controls.height.value = box.height;
+    syncCropOverlay();
+    drawCropLivePreview();
+  }
+
+  function syncCropOverlay() {
+    var controls = cropControls();
+
+    if (!state.image || !controls.box || !previewImage) {
+      return;
+    }
+
+    var box = getCropBox();
+    var rect = previewImage.getBoundingClientRect();
+    var scaleX = rect.width / state.image.naturalWidth;
+    var scaleY = rect.height / state.image.naturalHeight;
+
+    controls.box.style.left = (box.x * scaleX) + "px";
+    controls.box.style.top = (box.y * scaleY) + "px";
+    controls.box.style.width = (box.width * scaleX) + "px";
+    controls.box.style.height = (box.height * scaleY) + "px";
+    controls.box.hidden = false;
+  }
+
+  function drawCropLivePreview() {
+    var controls = cropControls();
+
+    if (!state.image || !controls.live) {
+      return;
+    }
+
+    var box = getCropBox();
+    var context = controls.live.getContext("2d", { alpha: false });
+    var scale = Math.min(controls.live.width / box.width, controls.live.height / box.height);
+    var drawWidth = Math.max(1, Math.round(box.width * scale));
+    var drawHeight = Math.max(1, Math.round(box.height * scale));
+    var x = Math.round((controls.live.width - drawWidth) / 2);
+    var y = Math.round((controls.live.height - drawHeight) / 2);
+
+    context.fillStyle = "#fffaf3";
+    context.fillRect(0, 0, controls.live.width, controls.live.height);
+    context.drawImage(state.image, box.x, box.y, box.width, box.height, x, y, drawWidth, drawHeight);
+  }
+
+  function initCropBox() {
+    if (!state.image) {
+      return;
+    }
+
+    var size = Math.round(Math.min(state.image.naturalWidth, state.image.naturalHeight) * 0.72);
+    setCropBox({
+      x: Math.round((state.image.naturalWidth - size) / 2),
+      y: Math.round((state.image.naturalHeight - size) / 2),
+      width: size,
+      height: size
+    }, false);
+  }
+
+  function resetCropBox() {
+    initCropBox();
+    setStatus("Crop area reset. Drag the box or handles to adjust.", "success");
+  }
+
+  function cropPoint(event) {
+    var point = event.touches && event.touches[0] ? event.touches[0] : event;
+    return { x: point.clientX, y: point.clientY };
+  }
+
+  function startCropDrag(event, mode) {
+    if (!state.image) {
+      return;
+    }
+
+    var point = cropPoint(event);
+    cropDrag.active = true;
+    cropDrag.mode = mode || "move";
+    cropDrag.startX = point.x;
+    cropDrag.startY = point.y;
+    cropDrag.startBox = getCropBox();
+    event.preventDefault();
+  }
+
+  function moveCropDrag(event) {
+    var controls = cropControls();
+
+    if (!cropDrag.active || !state.image || !previewImage) {
+      return;
+    }
+
+    var point = cropPoint(event);
+    var rect = previewImage.getBoundingClientRect();
+    var deltaX = (point.x - cropDrag.startX) * state.image.naturalWidth / rect.width;
+    var deltaY = (point.y - cropDrag.startY) * state.image.naturalHeight / rect.height;
+    var box = Object.assign({}, cropDrag.startBox);
+    var mode = cropDrag.mode;
+
+    if (mode === "move") {
+      box.x += deltaX;
+      box.y += deltaY;
+    } else {
+      if (mode.indexOf("w") !== -1) {
+        box.x += deltaX;
+        box.width -= deltaX;
+      }
+      if (mode.indexOf("e") !== -1) box.width += deltaX;
+      if (mode.indexOf("n") !== -1) {
+        box.y += deltaY;
+        box.height -= deltaY;
+      }
+      if (mode.indexOf("s") !== -1) box.height += deltaY;
+    }
+
+    setCropBox(box, controls.lock && controls.lock.checked && mode !== "move");
+    event.preventDefault();
+  }
+
+  function endCropDrag() {
+    cropDrag.active = false;
+  }
+
   function runCrop() {
-    var cropX = Math.max(0, Number(qs("[data-crop-x]").value) || 0);
-    var cropY = Math.max(0, Number(qs("[data-crop-y]").value) || 0);
-    var cropWidth = Math.min(state.image.naturalWidth - cropX, Number(qs("[data-crop-width]").value) || state.image.naturalWidth);
-    var cropHeight = Math.min(state.image.naturalHeight - cropY, Number(qs("[data-crop-height]").value) || state.image.naturalHeight);
+    var box = getCropBox();
+    var cropX = box.x;
+    var cropY = box.y;
+    var cropWidth = box.width;
+    var cropHeight = box.height;
     var type = qs("[data-output-format]").value;
     var canvas = makeCanvas(cropWidth, cropHeight);
     var context = canvas.getContext("2d", { alpha: type !== "image/jpeg" });
@@ -879,5 +1099,51 @@
         control.addEventListener("change", drawBackgroundPreview);
       }
     });
+  }
+
+  if (tool === "crop") {
+    ["[data-crop-x]", "[data-crop-y]", "[data-crop-width]", "[data-crop-height]", "[data-crop-lock-aspect]"].forEach(function (selector) {
+      var control = qs(selector);
+      if (control) {
+        control.addEventListener("input", function () { setCropBox(getCropBox(), false); });
+        control.addEventListener("change", function () { setCropBox(getCropBox(), false); });
+      }
+    });
+
+    var cropBox = qs("[data-crop-box]");
+    var cropReset = qs("[data-crop-reset]");
+
+    if (previewImage) {
+      previewImage.addEventListener("load", function () {
+        syncCropOverlay();
+        drawCropLivePreview();
+      });
+      window.addEventListener("resize", syncCropOverlay);
+    }
+
+    if (cropReset) {
+      cropReset.addEventListener("click", resetCropBox);
+    }
+
+    if (cropBox) {
+      cropBox.addEventListener("pointerdown", function (event) {
+        var handle = event.target.closest("[data-crop-handle]");
+        startCropDrag(event, handle ? handle.dataset.cropHandle : "move");
+        if (cropBox.setPointerCapture && event.pointerId !== undefined) {
+          cropBox.setPointerCapture(event.pointerId);
+        }
+      });
+      cropBox.addEventListener("pointermove", moveCropDrag);
+      ["pointerup", "pointercancel", "pointerleave"].forEach(function (eventName) {
+        cropBox.addEventListener(eventName, endCropDrag);
+      });
+      cropBox.addEventListener("touchstart", function (event) {
+        var handle = event.target.closest("[data-crop-handle]");
+        startCropDrag(event, handle ? handle.dataset.cropHandle : "move");
+      }, { passive: false });
+      cropBox.addEventListener("touchmove", moveCropDrag, { passive: false });
+      cropBox.addEventListener("touchend", endCropDrag);
+      cropBox.addEventListener("touchcancel", endCropDrag);
+    }
   }
 }());
