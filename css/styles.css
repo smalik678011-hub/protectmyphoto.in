@@ -4671,6 +4671,26 @@ body.stamp-page .stamp-preview-panel small {
   align-items: stretch;
 }
 
+.reviews-page .reviews-hero .eyebrow {
+  color: var(--review-ink);
+  background: rgba(245, 165, 36, 0.16);
+  border: 1px solid rgba(245, 165, 36, 0.34);
+  border-radius: 999px;
+  padding: 6px 12px;
+}
+
+.reviews-page .reviews-hero .eyebrow::before {
+  background: var(--review-emerald);
+}
+
+.reviews-page .reviews-hero h1 {
+  color: var(--review-ink);
+}
+
+.reviews-page .reviews-hero .hero-copy > p {
+  color: var(--review-muted);
+}
+
 .reviews-hero h1,
 .reviews-layout h2 {
   font-family: var(--display-font);
