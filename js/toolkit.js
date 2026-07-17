@@ -486,14 +486,26 @@
     var tasks = state.files.map(loadImage);
 
     return Promise.all(tasks).then(function (images) {
+      if (!images.length) {
+        throw new Error("No images were ready for PDF creation.");
+      }
+
       return core.createPdfFromImages(images, { pageSize: pageSize, quality: quality });
     }).then(function (pdf) {
+      if (!pdf || !pdf.size) {
+        throw new Error("PDF export returned an empty file.");
+      }
+
       downloadBlob(pdf, "protectmyphoto-images.pdf");
       setStats([
         ["Images", String(state.files.length)],
         ["PDF size", formatBytes(pdf.size)]
       ]);
       setStatus("Downloaded PDF: " + formatBytes(pdf.size), "success");
+    }).catch(function (error) {
+      console.warn("ProtectMyPhoto PDF export failed:", error);
+      setStatus(error.message || "PDF export failed. Please try another image.", "error");
+      throw error;
     });
   }
 
