@@ -6,5 +6,7 @@ start-preview.bat
 start-preview.ps1
 _hostinger_upload/
 *.zip
+tmp_pdf_tests/
+tmp-*.png
 .DS_Store
 Thumbs.db

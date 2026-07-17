@@ -4,6 +4,25 @@
   var navToggle = document.querySelector(".nav-toggle");
   var siteNav = document.getElementById("siteNav");
 
+  if (siteNav && !siteNav.querySelector('a[href="reviews.html"]')) {
+    var reviewsLink = document.createElement("a");
+    var loginLink = siteNav.querySelector('a[href="login.html"]');
+    var contactLink = siteNav.querySelector('a[href="contact.html"]');
+    reviewsLink.href = "reviews.html";
+    reviewsLink.textContent = "Reviews";
+    siteNav.insertBefore(reviewsLink, loginLink || contactLink || null);
+  }
+
+  Array.prototype.slice.call(document.querySelectorAll(".site-footer nav")).forEach(function (footerNav) {
+    if (!footerNav.querySelector('a[href="reviews.html"]')) {
+      var footerReviewsLink = document.createElement("a");
+      var footerPrivacyLink = footerNav.querySelector('a[href="privacy-policy.html"], a[href="privacy.html"]');
+      footerReviewsLink.href = "reviews.html";
+      footerReviewsLink.textContent = "Reviews";
+      footerNav.insertBefore(footerReviewsLink, footerPrivacyLink || null);
+    }
+  });
+
   if (navToggle && siteNav) {
     navToggle.addEventListener("click", function () {
       var isOpen = siteNav.classList.toggle("is-open");
@@ -88,7 +107,7 @@
     setInterval(runDemo, 1700);
   }
 
-  var revealItems = Array.prototype.slice.call(document.querySelectorAll(".hero, .section-band, .tool-card, .stamp-feature-strip, .content-split, .tool-workspace, .faq-section, .guide-section, .related-section, .comparison-section"));
+  var revealItems = Array.prototype.slice.call(document.querySelectorAll(".hero, .section-band, .tool-card, .stamp-feature-strip, .content-split, .tool-workspace, .faq-section, .guide-section, .related-section, .comparison-section, .reviews-layout, .review-card"));
 
   if ("IntersectionObserver" in window) {
     var revealObserver = new IntersectionObserver(function (entries) {
