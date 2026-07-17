@@ -86,9 +86,15 @@
   </url>
   <url>
     <loc>https://protectmyphoto.in/blog.html</loc>
-    <lastmod>2026-07-12</lastmod>
+    <lastmod>2026-07-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.76</priority>
+  </url>
+  <url>
+    <loc>https://protectmyphoto.in/blog/image-to-pdf-conversion-guide/</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.86</priority>
   </url>
   <url>
     <loc>https://protectmyphoto.in/faq.html</loc>
