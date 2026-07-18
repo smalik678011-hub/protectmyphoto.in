@@ -150,10 +150,12 @@ foreach (HF_ENDPOINTS as $endpoint) {
     $response = curl_exec($curl);
     if ($response === false) {
         $curlError = curl_error($curl);
+        $curlCode = curl_errno($curl);
         curl_close($curl);
         $lastError = array(
             'status' => 502,
             'providerStatus' => 0,
+            'providerError' => $curlCode . ': ' . $curlError,
             'message' => stripos($curlError, 'Could not resolve host') !== false
                 ? 'Background removal service could not be reached from this server. Please try again later.'
                 : 'Background removal service is unavailable. Please try again.'
@@ -180,10 +182,16 @@ foreach (HF_ENDPOINTS as $endpoint) {
 }
 
 if ($lastError) {
-    json_response($lastError['status'], array(
+    $payload = array(
         'message' => $lastError['message'],
         'providerStatus' => $lastError['providerStatus']
-    ));
+    );
+
+    if (isset($lastError['providerError'])) {
+        $payload['providerError'] = $lastError['providerError'];
+    }
+
+    json_response($lastError['status'], $payload);
 }
 
 json_response(502, array(
