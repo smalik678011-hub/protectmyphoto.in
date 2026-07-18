@@ -7,6 +7,8 @@
     files: [],
     image: null,
     previewUrl: null,
+    cutoutImage: null,
+    cutoutUrl: null,
     thumbnailUrls: []
   };
   var core = window.ProtectMyPhotoCore;
@@ -20,6 +22,7 @@
   var previewImage = document.querySelector("[data-preview-image]");
   var runButton = document.querySelector("[data-run-tool]");
   var clearButton = document.querySelector("[data-clear]");
+  var removeBgButton = document.querySelector("[data-remove-bg]");
   var driveButton = null;
   var statsBox = null;
   var passportDrag = { active: false, x: 0, y: 0 };
@@ -112,6 +115,19 @@
     return core.loadImageFromBlob(file).catch(function () {
       throw new Error("This image could not be opened. It may be corrupt or unsupported.");
     });
+  }
+
+  function activeEditableImage() {
+    return state.cutoutImage || state.image;
+  }
+
+  function clearAiCutout() {
+    if (state.cutoutUrl) {
+      URL.revokeObjectURL(state.cutoutUrl);
+      state.cutoutUrl = null;
+    }
+
+    state.cutoutImage = null;
   }
 
   function makeCanvas(width, height) {
@@ -293,6 +309,7 @@
   function clearAll() {
     state.files = [];
     state.image = null;
+    clearAiCutout();
     fileInput.value = "";
 
     if (state.previewUrl) {
@@ -352,6 +369,7 @@
     }
 
     state.files = selected;
+    clearAiCutout();
 
     loadImage(selected[0]).then(function (image) {
       state.image = image;
@@ -367,7 +385,7 @@
         ["Input", formatBytes(selected.reduce(function (total, file) { return total + file.size; }, 0))],
         ["Dimensions", image.naturalWidth + " x " + image.naturalHeight]
       ]);
-      setStatus(selected.length + " image(s) ready. Nothing has been uploaded.", "success");
+      setStatus(selected.length + " image(s) ready. Select AI background removal only if you need an automatic cutout.", "success");
 
       if (tool === "passport") {
         drawPassportPreview();
@@ -401,6 +419,86 @@
     driveButton.addEventListener("click", function () {
       setStatus("Choose Google Drive in the file picker, then select your image. Your file will still be processed in this browser.", "");
       fileInput.click();
+    });
+  }
+
+  function apiErrorMessage(response, payload) {
+    var fallback = "Background removal could not finish. Please try again.";
+    var message = payload && payload.message ? payload.message : fallback;
+
+    if (response.status === 429) {
+      return "The AI background remover is rate limited right now. Please wait a minute and try again.";
+    }
+
+    if (response.status === 503 || /loading|starting|cold/i.test(message)) {
+      return "The AI model is starting up. Please wait 20 seconds, then tap Remove background again.";
+    }
+
+    return message;
+  }
+
+  function removeBackgroundWithAi() {
+    if (!state.files.length || !state.image) {
+      setStatus("Please choose an image first.", "error");
+      return;
+    }
+
+    if (!removeBgButton) {
+      return;
+    }
+
+    removeBgButton.disabled = true;
+    removeBgButton.dataset.originalText = removeBgButton.dataset.originalText || removeBgButton.textContent;
+    removeBgButton.textContent = "Removing...";
+    setStatus("Removing background with AI. First run can take 10-20 seconds.", "");
+
+    fetch("api/remove-background.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": state.files[0].type || "application/octet-stream"
+      },
+      body: state.files[0],
+      cache: "no-store"
+    }).then(function (response) {
+      var contentType = response.headers.get("Content-Type") || "";
+
+      if (response.ok && contentType.indexOf("image/") === 0) {
+        return response.blob();
+      }
+
+      return response.text().then(function (text) {
+        var payload = null;
+        try {
+          payload = JSON.parse(text);
+        } catch (error) {
+          payload = { message: text };
+        }
+
+        throw new Error(apiErrorMessage(response, payload));
+      });
+    }).then(function (blob) {
+      clearAiCutout();
+      state.cutoutUrl = URL.createObjectURL(blob);
+      return core.loadImageFromBlob(blob);
+    }).then(function (image) {
+      state.cutoutImage = image;
+      if (tool === "passport") {
+        drawPassportPreview();
+      } else {
+        drawBackgroundPreview();
+      }
+      setStats([
+        ["AI cutout", "Ready"],
+        ["Output", "Transparent PNG"],
+        ["Next", "Choose background color"]
+      ]);
+      setStatus("Background removed. Choose white, blue, or red background, then download.", "success");
+    }).catch(function (error) {
+      console.warn("ProtectMyPhoto background removal failed:", error);
+      setStatus(error.message || "Background removal failed. Please try again.", "error");
+    }).finally(function () {
+      removeBgButton.disabled = false;
+      removeBgButton.textContent = removeBgButton.dataset.originalText;
     });
   }
 
@@ -533,8 +631,9 @@
 
   function drawPassportPreview() {
     var canvas = qs("[data-passport-canvas]");
+    var image = activeEditableImage();
 
-    if (!canvas || !state.image) {
+    if (!canvas || !image) {
       return null;
     }
 
@@ -544,10 +643,10 @@
     var offsetX = Number(qs("[data-offset-x]").value) || 0;
     var offsetY = Number(qs("[data-offset-y]").value) || 0;
     var context = canvas.getContext("2d", { alpha: false });
-    var baseScale = Math.max(dims.width / state.image.naturalWidth, dims.height / state.image.naturalHeight);
+    var baseScale = Math.max(dims.width / image.naturalWidth, dims.height / image.naturalHeight);
     var scale = baseScale * zoom;
-    var drawWidth = state.image.naturalWidth * scale;
-    var drawHeight = state.image.naturalHeight * scale;
+    var drawWidth = image.naturalWidth * scale;
+    var drawHeight = image.naturalHeight * scale;
     var x = (dims.width - drawWidth) / 2 + offsetX;
     var y = (dims.height - drawHeight) / 2 + offsetY;
 
@@ -555,7 +654,7 @@
     canvas.height = dims.height;
     context.fillStyle = bg;
     context.fillRect(0, 0, dims.width, dims.height);
-    context.drawImage(state.image, x, y, drawWidth, drawHeight);
+    context.drawImage(image, x, y, drawWidth, drawHeight);
     return canvas;
   }
 
@@ -564,7 +663,7 @@
     var targetKb = Number(qs("[data-target-kb]").value) || 0;
     var dims = passportDimensions();
 
-    return core.createPassportPhoto(state.image, {
+    return core.createPassportPhoto(activeEditableImage(), {
       width: dims.width,
       height: dims.height,
       zoom: Number(qs("[data-zoom]").value) || 1,
@@ -918,8 +1017,9 @@
   }
 
   function drawBackgroundCanvas() {
-    var width = Number(qs("[data-width]").value) || state.image.naturalWidth;
-    var height = Number(qs("[data-height]").value) || state.image.naturalHeight;
+    var image = activeEditableImage();
+    var width = Number(qs("[data-width]").value) || image.naturalWidth;
+    var height = Number(qs("[data-height]").value) || image.naturalHeight;
     var background = qs("[data-bg-color]").value || "#ffffff";
     var fitMode = qs("[data-fit-mode]").value;
     var cleanControl = qs("[data-clean-bg]");
@@ -928,19 +1028,22 @@
     var canvas = makeCanvas(width, height);
     var context = canvas.getContext("2d", { alpha: false });
     var scale = fitMode === "cover"
-      ? Math.max(width / state.image.naturalWidth, height / state.image.naturalHeight)
-      : Math.min(width / state.image.naturalWidth, height / state.image.naturalHeight);
-    var drawWidth = Math.round(state.image.naturalWidth * scale);
-    var drawHeight = Math.round(state.image.naturalHeight * scale);
+      ? Math.max(width / image.naturalWidth, height / image.naturalHeight)
+      : Math.min(width / image.naturalWidth, height / image.naturalHeight);
+    var drawWidth = Math.round(image.naturalWidth * scale);
+    var drawHeight = Math.round(image.naturalHeight * scale);
 
     context.fillStyle = background;
     context.fillRect(0, 0, width, height);
-    context.drawImage(state.image, Math.round((width - drawWidth) / 2), Math.round((height - drawHeight) / 2), drawWidth, drawHeight);
-    applyPlainBackgroundCleanup(canvas, background, {
-      mode: cleanControl ? cleanControl.value : "off",
-      tolerance: toleranceControl ? toleranceControl.value : 0,
-      softness: softnessControl ? softnessControl.value : 0
-    });
+    context.drawImage(image, Math.round((width - drawWidth) / 2), Math.round((height - drawHeight) / 2), drawWidth, drawHeight);
+
+    if (!state.cutoutImage) {
+      applyPlainBackgroundCleanup(canvas, background, {
+        mode: cleanControl ? cleanControl.value : "off",
+        tolerance: toleranceControl ? toleranceControl.value : 0,
+        softness: softnessControl ? softnessControl.value : 0
+      });
+    }
 
     return canvas;
   }
@@ -1026,6 +1129,9 @@
 
     if (clearButton) {
       clearButton.addEventListener("click", clearAll);
+    }
+    if (removeBgButton) {
+      removeBgButton.addEventListener("click", removeBackgroundWithAi);
     }
     runButton.addEventListener("click", runTool);
   }

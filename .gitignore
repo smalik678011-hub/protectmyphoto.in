@@ -10,3 +10,5 @@ tmp_pdf_tests/
 tmp-*.png
 .DS_Store
 Thumbs.db
+.env
+api/.env
