@@ -4263,6 +4263,85 @@ body[data-tool="passport"] .passport-actions {
   backdrop-filter: blur(14px);
 }
 
+body[data-tool="passport"] .passport-editor,
+body[data-tool="passport"] .passport-controls,
+body[data-tool="passport"] .passport-actions,
+body[data-tool="passport"] .result-stats {
+  color: #201816;
+}
+
+body[data-tool="passport"] .passport-controls {
+  background:
+    linear-gradient(180deg, rgba(255, 250, 243, 0.98), rgba(248, 244, 238, 0.96));
+  border-color: #e8ddd0;
+  box-shadow: 0 18px 42px rgba(32, 24, 22, 0.12);
+}
+
+body[data-tool="passport"] .passport-controls label {
+  color: #201816;
+  font-weight: 850;
+}
+
+body[data-tool="passport"] .passport-controls input,
+body[data-tool="passport"] .passport-controls select {
+  min-height: 50px;
+  background: #fffaf3;
+  border-color: #d8c8b8;
+  color: #201816;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82);
+}
+
+body[data-tool="passport"] .passport-controls input:focus,
+body[data-tool="passport"] .passport-controls select:focus {
+  border-color: rgba(245, 165, 36, 0.82);
+  box-shadow: 0 0 0 4px rgba(245, 165, 36, 0.18);
+  outline: 0;
+}
+
+body[data-tool="passport"] .passport-controls input[type="range"] {
+  min-height: 34px;
+  padding: 0;
+  accent-color: #f5a524;
+  background: transparent;
+  box-shadow: none;
+}
+
+body[data-tool="passport"] .passport-edit-hint,
+body[data-tool="passport"] .result-stats,
+body[data-tool="passport"] .result-stats span {
+  color: #5f554c;
+}
+
+body[data-tool="passport"] .result-stats strong {
+  color: #201816;
+}
+
+body[data-tool="passport"] .passport-quick-controls .ghost-action,
+body[data-tool="passport"] .passport-actions .ghost-action {
+  background: #fffaf3;
+  border-color: #d8c8b8;
+  color: #201816;
+}
+
+body[data-tool="passport"] .passport-quick-controls .ghost-action:hover,
+body[data-tool="passport"] .passport-actions .ghost-action:hover {
+  background: #fff4df;
+  border-color: rgba(245, 165, 36, 0.58);
+  color: #201816;
+}
+
+body[data-tool="passport"] .passport-actions .ghost-action:disabled {
+  background: #ebe3d8;
+  border-color: #d8c8b8;
+  color: #4f4640;
+  cursor: wait;
+  opacity: 1;
+}
+
+body[data-tool="passport"] .passport-actions .primary-action {
+  color: #201816;
+}
+
 @media (max-width: 980px) {
   body[data-tool="passport"] .passport-editor {
     grid-template-columns: 1fr;
