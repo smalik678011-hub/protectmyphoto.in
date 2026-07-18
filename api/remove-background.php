@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 const MAX_BYTES = 12582912;
 const HF_ENDPOINTS = array(
-    'https://router.huggingface.co/hf-inference/models/briaai/RMBG-1.4'
+    'https://router.huggingface.co/hf-inference/models/Trendyol/background-removal'
 );
 const HF_ROUTER_RESOLVE = array(
     'router.huggingface.co:443:13.224.163.19',
@@ -110,6 +110,49 @@ function friendly_error(int $status, string $body): array
     );
 }
 
+function base64_image_from_json(string $body): string
+{
+    $decoded = json_decode($body, true);
+    if (!is_array($decoded)) {
+        return '';
+    }
+
+    $candidates = array();
+    if (isset($decoded['image'])) {
+        $candidates[] = $decoded['image'];
+    }
+    if (isset($decoded['generated_image'])) {
+        $candidates[] = $decoded['generated_image'];
+    }
+    if (isset($decoded['mask'])) {
+        $candidates[] = $decoded['mask'];
+    }
+    if (isset($decoded[0]) && is_array($decoded[0])) {
+        foreach (array('image', 'generated_image', 'mask') as $key) {
+            if (isset($decoded[0][$key])) {
+                $candidates[] = $decoded[0][$key];
+            }
+        }
+    }
+
+    foreach ($candidates as $candidate) {
+        if (!is_string($candidate) || $candidate === '') {
+            continue;
+        }
+
+        if (strpos($candidate, 'base64,') !== false) {
+            $candidate = substr($candidate, strpos($candidate, 'base64,') + 7);
+        }
+
+        $bytes = base64_decode($candidate, true);
+        if ($bytes !== false && strlen($bytes) > 8) {
+            return $bytes;
+        }
+    }
+
+    return '';
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     json_response(405, array('message' => 'Use POST to remove a background.'));
 }
@@ -196,6 +239,16 @@ foreach (HF_ENDPOINTS as $endpoint) {
         header('Content-Type: image/png');
         echo $body;
         exit;
+    }
+
+    if ($status >= 200 && $status < 300 && stripos($responseType, 'application/json') !== false) {
+        $imageFromJson = base64_image_from_json($body);
+        if ($imageFromJson !== '') {
+            http_response_code(200);
+            header('Content-Type: image/png');
+            echo $imageFromJson;
+            exit;
+        }
     }
 
     $error = friendly_error($status, $body);
