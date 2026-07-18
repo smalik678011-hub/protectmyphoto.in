@@ -3,8 +3,7 @@ declare(strict_types=1);
 
 const MAX_BYTES = 12582912;
 const HF_ENDPOINTS = array(
-    'https://router.huggingface.co/hf-inference/models/briaai/RMBG-1.4',
-    'https://api-inference.huggingface.co/models/briaai/RMBG-1.4'
+    'https://router.huggingface.co/hf-inference/models/briaai/RMBG-1.4'
 );
 const HF_ROUTER_RESOLVE = array(
     'router.huggingface.co:443:13.224.163.19',
