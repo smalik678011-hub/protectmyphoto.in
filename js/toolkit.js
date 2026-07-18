@@ -147,6 +147,91 @@
     return canvas;
   }
 
+  function floodFillBackgroundFromEdges(alphaData, width, height, alphaThreshold) {
+    var total = width * height;
+    var reachable = new Uint8Array(total);
+    var queue = new Int32Array(total);
+    var head = 0;
+    var tail = 0;
+
+    function enqueue(index) {
+      if (index < 0 || index >= total || reachable[index] || alphaData[index] >= alphaThreshold) {
+        return;
+      }
+
+      reachable[index] = 1;
+      queue[tail] = index;
+      tail += 1;
+    }
+
+    for (var x = 0; x < width; x += 1) {
+      enqueue(x);
+      enqueue((height - 1) * width + x);
+    }
+
+    for (var y = 0; y < height; y += 1) {
+      enqueue(y * width);
+      enqueue(y * width + width - 1);
+    }
+
+    while (head < tail) {
+      var current = queue[head];
+      head += 1;
+
+      var cx = current % width;
+      if (cx > 0) enqueue(current - 1);
+      if (cx < width - 1) enqueue(current + 1);
+      if (current >= width) enqueue(current - width);
+      if (current < total - width) enqueue(current + width);
+    }
+
+    return reachable;
+  }
+
+  function refineAiCutoutCanvas(cutoutImage) {
+    var width = cutoutImage.naturalWidth || cutoutImage.width;
+    var height = cutoutImage.naturalHeight || cutoutImage.height;
+    var cutoutCanvas = drawImageToCanvas(cutoutImage, width, height);
+    var cutoutContext = cutoutCanvas.getContext("2d", { willReadFrequently: true });
+    var cutoutData = cutoutContext.getImageData(0, 0, width, height);
+    var pixels = cutoutData.data;
+    var total = width * height;
+    var alpha = new Uint8Array(total);
+
+    for (var i = 0; i < total; i += 1) {
+      alpha[i] = pixels[(i * 4) + 3];
+    }
+
+    var originalCanvas = drawImageToCanvas(state.image, width, height);
+    var originalData = originalCanvas.getContext("2d", { willReadFrequently: true }).getImageData(0, 0, width, height).data;
+    var backgroundReachable = floodFillBackgroundFromEdges(alpha, width, height, 18);
+    var restored = 0;
+
+    for (var index = 0; index < total; index += 1) {
+      if (backgroundReachable[index]) {
+        continue;
+      }
+
+      var offset = index * 4;
+      var currentAlpha = pixels[offset + 3];
+
+      if (currentAlpha < 230) {
+        pixels[offset] = originalData[offset];
+        pixels[offset + 1] = originalData[offset + 1];
+        pixels[offset + 2] = originalData[offset + 2];
+        pixels[offset + 3] = currentAlpha < 64 ? 255 : Math.max(currentAlpha, 235);
+        restored += 1;
+      }
+    }
+
+    if (restored) {
+      console.info("ProtectMyPhoto restored AI cutout foreground holes:", restored);
+    }
+
+    cutoutContext.putImageData(cutoutData, 0, 0);
+    return cutoutCanvas;
+  }
+
   function canvasToBlob(canvas, type, quality) {
     return core.canvasToBlob(canvas, type, quality).catch(function () {
       throw new Error("The browser could not export this image.");
@@ -469,9 +554,14 @@
 
   function applyAiCutoutBlob(blob) {
     clearAiCutout();
-    state.cutoutUrl = URL.createObjectURL(blob);
 
     return core.loadImageFromBlob(blob).then(function (image) {
+      var refinedCanvas = refineAiCutoutCanvas(image);
+      return canvasToBlob(refinedCanvas, "image/png").then(function (refinedBlob) {
+        state.cutoutUrl = URL.createObjectURL(refinedBlob);
+        return core.loadImageFromBlob(refinedBlob);
+      });
+    }).then(function (image) {
       state.cutoutImage = image;
       if (tool === "passport") {
         drawPassportPreview();
