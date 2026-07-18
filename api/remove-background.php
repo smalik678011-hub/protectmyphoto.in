@@ -1,8 +1,11 @@
 <?php
 declare(strict_types=1);
 
-const HF_ENDPOINT = 'https://api-inference.huggingface.co/models/briaai/RMBG-1.4';
 const MAX_BYTES = 12582912;
+const HF_ENDPOINTS = array(
+    'https://router.huggingface.co/hf-inference/models/briaai/RMBG-1.4',
+    'https://api-inference.huggingface.co/models/briaai/RMBG-1.4'
+);
 
 header('Cache-Control: no-store');
 
@@ -100,39 +103,47 @@ if ($imageBytes === false || strlen($imageBytes) === 0) {
     json_response(400, array('message' => 'The uploaded image could not be read.'));
 }
 
-$curl = curl_init(HF_ENDPOINT);
-curl_setopt_array($curl, array(
-    CURLOPT_POST => true,
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_HEADER => true,
-    CURLOPT_TIMEOUT => 90,
-    CURLOPT_POSTFIELDS => $imageBytes,
-    CURLOPT_HTTPHEADER => array(
-        'Authorization: Bearer ' . $apiKey,
-        'Accept: image/png',
-        'Content-Type: ' . $contentType
-    )
-));
+foreach (HF_ENDPOINTS as $endpoint) {
+    $curl = curl_init($endpoint);
+    curl_setopt_array($curl, array(
+        CURLOPT_POST => true,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HEADER => true,
+        CURLOPT_TIMEOUT => 90,
+        CURLOPT_POSTFIELDS => $imageBytes,
+        CURLOPT_HTTPHEADER => array(
+            'Authorization: Bearer ' . $apiKey,
+            'Accept: image/png',
+            'Content-Type: ' . $contentType
+        )
+    ));
 
-$response = curl_exec($curl);
-if ($response === false) {
-    $error = curl_error($curl);
+    $response = curl_exec($curl);
+    if ($response === false) {
+        $curlError = curl_error($curl);
+        curl_close($curl);
+        if (stripos($curlError, 'Could not resolve host') !== false) {
+            continue;
+        }
+        json_response(502, array('message' => 'Background removal service is unavailable. Please try again.'));
+    }
+
+    $status = (int) curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
+    $headerSize = (int) curl_getinfo($curl, CURLINFO_HEADER_SIZE);
+    $body = substr($response, $headerSize);
+    $responseType = (string) curl_getinfo($curl, CURLINFO_CONTENT_TYPE);
     curl_close($curl);
-    json_response(502, array('message' => 'Background removal service is unavailable. Please try again.', 'detail' => $error));
+
+    $isPng = substr($body, 0, 8) === "\x89PNG\r\n\x1a\n";
+    if ($status >= 200 && $status < 300 && (stripos($responseType, 'image/') !== false || $isPng)) {
+        http_response_code(200);
+        header('Content-Type: image/png');
+        echo $body;
+        exit;
+    }
+
+    $error = friendly_error($status, $body);
+    json_response($error['status'], array('message' => $error['message']));
 }
 
-$status = (int) curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
-$headerSize = (int) curl_getinfo($curl, CURLINFO_HEADER_SIZE);
-$body = substr($response, $headerSize);
-$responseType = (string) curl_getinfo($curl, CURLINFO_CONTENT_TYPE);
-curl_close($curl);
-
-if ($status >= 200 && $status < 300 && stripos($responseType, 'image/') !== false) {
-    http_response_code(200);
-    header('Content-Type: image/png');
-    echo $body;
-    exit;
-}
-
-$error = friendly_error($status, $body);
-json_response($error['status'], array('message' => $error['message']));
+json_response(502, array('message' => 'Background removal service could not be reached from the server. Please try again later.'));

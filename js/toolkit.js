@@ -452,7 +452,7 @@
     removeBgButton.textContent = "Removing...";
     setStatus("Removing background with AI. First run can take 10-20 seconds.", "");
 
-    fetch("api/remove-background.php", {
+    fetch("/api/remove-background.php", {
       method: "POST",
       headers: {
         "Content-Type": state.files[0].type || "application/octet-stream"
