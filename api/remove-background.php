@@ -6,6 +6,12 @@ const HF_ENDPOINTS = array(
     'https://router.huggingface.co/hf-inference/models/briaai/RMBG-1.4',
     'https://api-inference.huggingface.co/models/briaai/RMBG-1.4'
 );
+const HF_ROUTER_RESOLVE = array(
+    'router.huggingface.co:443:13.224.163.19',
+    'router.huggingface.co:443:13.224.163.78',
+    'router.huggingface.co:443:13.224.163.90',
+    'router.huggingface.co:443:13.224.163.92'
+);
 
 header('Cache-Control: no-store');
 
@@ -134,7 +140,7 @@ $lastError = null;
 
 foreach (HF_ENDPOINTS as $endpoint) {
     $curl = curl_init($endpoint);
-    curl_setopt_array($curl, array(
+    $curlOptions = array(
         CURLOPT_POST => true,
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_HEADER => true,
@@ -145,7 +151,13 @@ foreach (HF_ENDPOINTS as $endpoint) {
             'Accept: image/png',
             'Content-Type: ' . $contentType
         )
-    ));
+    );
+
+    if (strpos($endpoint, 'router.huggingface.co') !== false) {
+        $curlOptions[CURLOPT_RESOLVE] = HF_ROUTER_RESOLVE;
+    }
+
+    curl_setopt_array($curl, $curlOptions);
 
     $response = curl_exec($curl);
     if ($response === false) {
