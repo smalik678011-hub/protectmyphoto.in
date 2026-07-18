@@ -48,9 +48,34 @@ function friendly_error(int $status, string $body): array
     $decoded = json_decode($body, true);
     $rawMessage = is_array($decoded) && isset($decoded['error']) ? (string) $decoded['error'] : $body;
 
+    if ($status === 401 || $status === 403) {
+        return array(
+            'status' => 502,
+            'providerStatus' => $status,
+            'message' => 'Hugging Face token is not allowed for AI background removal. Please update the server token with Inference permission.'
+        );
+    }
+
+    if ($status === 404) {
+        return array(
+            'status' => 502,
+            'providerStatus' => $status,
+            'message' => 'The selected AI background model is not available on this inference endpoint. Please try again later.'
+        );
+    }
+
+    if ($status === 422 || stripos($rawMessage, 'invalid') !== false) {
+        return array(
+            'status' => 422,
+            'providerStatus' => $status,
+            'message' => 'The AI model could not read this image. Please try a clear JPG or PNG photo.'
+        );
+    }
+
     if ($status === 429) {
         return array(
             'status' => 429,
+            'providerStatus' => $status,
             'message' => 'The AI background remover is rate limited right now. Please wait a minute and try again.'
         );
     }
@@ -58,12 +83,14 @@ function friendly_error(int $status, string $body): array
     if ($status === 503 || stripos($rawMessage, 'loading') !== false || stripos($rawMessage, 'currently loading') !== false) {
         return array(
             'status' => 503,
+            'providerStatus' => $status,
             'message' => 'The AI model is starting up. Please wait 20 seconds, then try again.'
         );
     }
 
     return array(
         'status' => 502,
+        'providerStatus' => $status,
         'message' => 'Background removal could not finish. Please try again.'
     );
 }
@@ -103,6 +130,8 @@ if ($imageBytes === false || strlen($imageBytes) === 0) {
     json_response(400, array('message' => 'The uploaded image could not be read.'));
 }
 
+$lastError = null;
+
 foreach (HF_ENDPOINTS as $endpoint) {
     $curl = curl_init($endpoint);
     curl_setopt_array($curl, array(
@@ -122,10 +151,14 @@ foreach (HF_ENDPOINTS as $endpoint) {
     if ($response === false) {
         $curlError = curl_error($curl);
         curl_close($curl);
-        if (stripos($curlError, 'Could not resolve host') !== false) {
-            continue;
-        }
-        json_response(502, array('message' => 'Background removal service is unavailable. Please try again.'));
+        $lastError = array(
+            'status' => 502,
+            'providerStatus' => 0,
+            'message' => stripos($curlError, 'Could not resolve host') !== false
+                ? 'Background removal service could not be reached from this server. Please try again later.'
+                : 'Background removal service is unavailable. Please try again.'
+        );
+        continue;
     }
 
     $status = (int) curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
@@ -143,7 +176,17 @@ foreach (HF_ENDPOINTS as $endpoint) {
     }
 
     $error = friendly_error($status, $body);
-    json_response($error['status'], array('message' => $error['message']));
+    $lastError = $error;
 }
 
-json_response(502, array('message' => 'Background removal service could not be reached from the server. Please try again later.'));
+if ($lastError) {
+    json_response($lastError['status'], array(
+        'message' => $lastError['message'],
+        'providerStatus' => $lastError['providerStatus']
+    ));
+}
+
+json_response(502, array(
+    'message' => 'Background removal service could not be reached from the server. Please try again later.',
+    'providerStatus' => 0
+));
