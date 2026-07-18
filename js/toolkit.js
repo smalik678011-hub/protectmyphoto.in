@@ -437,6 +437,56 @@
     return message;
   }
 
+  function shouldUseBrowserBackgroundFallback(error) {
+    var providerMessage = error && error.providerMessage ? error.providerMessage : "";
+    var message = error && error.message ? error.message : "";
+
+    return error && (
+      error.providerStatus === 400 ||
+      error.providerStatus === 0 ||
+      /not supported|could not be reached|unavailable/i.test(providerMessage + " " + message)
+    );
+  }
+
+  function removeBackgroundInBrowser() {
+    setStatus("Server AI is unavailable, so ProtectMyPhoto is using private browser AI. First run may download the model and take a little longer.", "");
+
+    return import("https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/+esm").then(function (module) {
+      var removeBackground = module.default || module.removeBackground;
+
+      if (!removeBackground) {
+        throw new Error("Browser AI background removal could not load. Please refresh and try again.");
+      }
+
+      return removeBackground(state.files[0], {
+        model: "isnet_quint8",
+        output: {
+          format: "image/png"
+        }
+      });
+    });
+  }
+
+  function applyAiCutoutBlob(blob) {
+    clearAiCutout();
+    state.cutoutUrl = URL.createObjectURL(blob);
+
+    return core.loadImageFromBlob(blob).then(function (image) {
+      state.cutoutImage = image;
+      if (tool === "passport") {
+        drawPassportPreview();
+      } else {
+        drawBackgroundPreview();
+      }
+      setStats([
+        ["AI cutout", "Ready"],
+        ["Output", "Transparent PNG"],
+        ["Next", "Choose background color"]
+      ]);
+      setStatus("Background removed. Choose white, blue, or red background, then download.", "success");
+    });
+  }
+
   function removeBackgroundWithAi() {
     if (!state.files.length || !state.image) {
       setStatus("Please choose an image first.", "error");
@@ -474,25 +524,20 @@
           payload = { message: text };
         }
 
-        throw new Error(apiErrorMessage(response, payload));
+        var apiError = new Error(apiErrorMessage(response, payload));
+        apiError.providerStatus = payload && payload.providerStatus;
+        apiError.providerMessage = payload && payload.providerMessage;
+        throw apiError;
       });
-    }).then(function (blob) {
-      clearAiCutout();
-      state.cutoutUrl = URL.createObjectURL(blob);
-      return core.loadImageFromBlob(blob);
-    }).then(function (image) {
-      state.cutoutImage = image;
-      if (tool === "passport") {
-        drawPassportPreview();
-      } else {
-        drawBackgroundPreview();
+    }).catch(function (error) {
+      if (shouldUseBrowserBackgroundFallback(error)) {
+        console.warn("ProtectMyPhoto server background removal unavailable, using browser fallback:", error);
+        return removeBackgroundInBrowser();
       }
-      setStats([
-        ["AI cutout", "Ready"],
-        ["Output", "Transparent PNG"],
-        ["Next", "Choose background color"]
-      ]);
-      setStatus("Background removed. Choose white, blue, or red background, then download.", "success");
+
+      throw error;
+    }).then(function (blob) {
+      return applyAiCutoutBlob(blob);
     }).catch(function (error) {
       console.warn("ProtectMyPhoto background removal failed:", error);
       setStatus(error.message || "Background removal failed. Please try again.", "error");
