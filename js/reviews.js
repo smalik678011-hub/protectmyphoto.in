@@ -353,6 +353,11 @@
     }
   }
 
+  function reviewDocumentId(submitUser, clientId) {
+    var identity = submitUser ? submitUser.uid : clientId;
+    return (submitUser ? "user_" : "guest_") + identity.replace(/[\/\\#?\[\]]/g, "-") + "_" + todayKey();
+  }
+
   async function submitReview(event) {
     event.preventDefault();
     if (!db || !firestore) {
@@ -392,7 +397,8 @@
     submitButton.textContent = "Submitting...";
 
     try {
-      await firestore.addDoc(firestore.collection(db, "reviews"), {
+      var reviewRef = firestore.doc(db, "reviews", reviewDocumentId(submitUser, clientId));
+      await firestore.setDoc(reviewRef, {
         name: name.slice(0, 60),
         rating: rating,
         reviewText: reviewText.slice(0, 500),
@@ -411,7 +417,7 @@
     } catch (error) {
       console.warn("ProtectMyPhoto review submit failed:", error);
       if (error && error.code === "permission-denied") {
-        setStatus("Review was blocked by Firestore rules. Please refresh, sign in again, and try once more.", "error");
+        setStatus("You may have already submitted a review today. Please try again tomorrow.", "error");
       } else {
         setStatus("Review could not be submitted. Please try again.", "error");
       }
