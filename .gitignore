@@ -1,6 +1,5 @@
 .agents/
 _git_push_work_*/
-js/firebase-config.js
 .local-preview-server.js
 start-preview.bat
 start-preview.ps1

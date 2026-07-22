@@ -17,21 +17,19 @@ ProtectMyPhoto can use Firebase Authentication on static Hostinger hosting. No N
 
 ## Frontend config
 
-Copy:
-
-```text
-js/firebase-config.example.js
-```
-
-to:
+The production config file is:
 
 ```text
 js/firebase-config.js
 ```
 
-Then fill only Firebase Web App config values.
+The example file is still available for reference:
 
-Firebase Web App config is public routing data. It is not an admin secret. Still, keep this file out of Git so changes can be managed per environment.
+```text
+js/firebase-config.example.js
+```
+
+Firebase Web App config is public routing data. It is not an admin secret, so the production browser config can be deployed with the static site. Only Firebase Web App config values belong here.
 
 ## Never add these to frontend
 

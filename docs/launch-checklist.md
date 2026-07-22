@@ -32,7 +32,7 @@ Upload the public site files and folders:
 - site.webmanifest
 - vendor/README.md if needed for attribution
 
-The local `js/firebase-config.js` is intentionally ignored by Git. If Firebase login is used on production, add the production Firebase Web App config during deployment. Never add admin/private Firebase credentials.
+The production `js/firebase-config.js` is deployed with the static site because Firebase Web App config is public routing data, not an admin secret. Never add admin/private Firebase credentials, service-account JSON, SMTP passwords, or server tokens to frontend files.
 
 ## Final checks
 

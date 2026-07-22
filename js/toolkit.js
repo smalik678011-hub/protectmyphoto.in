@@ -523,13 +523,12 @@
   }
 
   function shouldUseBrowserBackgroundFallback(error) {
-    var providerMessage = error && error.providerMessage ? error.providerMessage : "";
     var message = error && error.message ? error.message : "";
 
     return error && (
       error.providerStatus === 400 ||
       error.providerStatus === 0 ||
-      /not supported|could not be reached|unavailable/i.test(providerMessage + " " + message)
+      /not supported|could not be reached|unavailable/i.test(message)
     );
   }
 
@@ -616,7 +615,6 @@
 
         var apiError = new Error(apiErrorMessage(response, payload));
         apiError.providerStatus = payload && payload.providerStatus;
-        apiError.providerMessage = payload && payload.providerMessage;
         throw apiError;
       });
     }).catch(function (error) {

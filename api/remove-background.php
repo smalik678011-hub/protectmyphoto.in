@@ -304,10 +304,10 @@ foreach (HF_ENDPOINTS as $endpoint) {
         $curlError = curl_error($curl);
         $curlCode = curl_errno($curl);
         curl_close($curl);
+        error_log('ProtectMyPhoto background cURL error ' . $curlCode . ': ' . $curlError);
         $lastError = array(
             'status' => 502,
             'providerStatus' => 0,
-            'providerError' => $curlCode . ': ' . $curlError,
             'message' => stripos($curlError, 'Could not resolve host') !== false
                 ? 'Background removal service could not be reached from this server. Please try again later.'
                 : 'Background removal service is unavailable. Please try again.'
@@ -348,10 +348,6 @@ if ($lastError) {
         'message' => $lastError['message'],
         'providerStatus' => $lastError['providerStatus']
     );
-
-    if (isset($lastError['providerError'])) {
-        $payload['providerError'] = $lastError['providerError'];
-    }
 
     json_response($lastError['status'], $payload);
 }
