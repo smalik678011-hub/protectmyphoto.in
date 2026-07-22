@@ -42,13 +42,87 @@
     <main class="content-page">
       <p class="eyebrow">Support</p>
       <h1>Contact ProtectMyPhoto</h1>
-      <p>For support, privacy questions, business inquiries, or admin requests, contact:</p>
-      <p class="contact-email"><a href="mailto:admin@protectmyphoto.in">admin@protectmyphoto.in</a></p>
+      <p>For support, privacy questions, business inquiries, or admin requests, fill the form below or email us directly at
+        <a href="mailto:admin@protectmyphoto.in">admin@protectmyphoto.in</a>.</p>
+
+      <form class="auth-card" data-contact-form novalidate style="margin: 24px 0; max-width: 480px;">
+        <p class="auth-status" data-contact-status hidden></p>
+        <label class="auth-field"><span>Name</span><input type="text" placeholder="Your name" autocomplete="name" data-contact-name required></label>
+        <label class="auth-field"><span>Email</span><input type="email" placeholder="you@example.com" autocomplete="email" data-contact-email required></label>
+        <label class="auth-field"><span>Reason</span>
+          <select data-contact-reason>
+            <option value="Support">Tool support / bug</option>
+            <option value="Privacy">Privacy question</option>
+            <option value="Business">Business inquiry</option>
+            <option value="Other">Something else</option>
+          </select>
+        </label>
+        <label class="auth-field"><span>Message</span><textarea rows="5" placeholder="Describe your issue or question. If a tool didn't work, mention your device, browser, file type, and approximate file size." data-contact-message required></textarea></label>
+        <button type="submit" class="primary-action" data-contact-submit>Send message</button>
+        <button type="button" class="primary-action" data-contact-copy style="margin-top: 8px; background: transparent; border: 1px solid currentColor;" hidden>Copy message instead</button>
+        <p style="font-size: 13px; opacity: 0.7; margin-top: 8px;">This opens your email app with the message pre-filled. No email app set up? Use "Copy message instead" and paste it into Gmail, WhatsApp Web, or any messaging app to send to admin@protectmyphoto.in.</p>
+      </form>
+
       <h2>Before emailing</h2>
       <p>Please do not send passwords, private keys, government ID scans, payment details, or sensitive credentials by email.</p>
       <h2>Tool issues</h2>
       <p>If a file does not work, mention your device, browser, file type, and approximate file size. Do not attach sensitive personal files unless you are comfortable sharing them by email.</p>
     </main>
+    <script>
+      (function () {
+        var form = document.querySelector("[data-contact-form]");
+        if (!form) return;
+        var statusBox = document.querySelector("[data-contact-status]");
+        var copyBtn = document.querySelector("[data-contact-copy]");
+        var nameEl = document.querySelector("[data-contact-name]");
+        var emailEl = document.querySelector("[data-contact-email]");
+        var reasonEl = document.querySelector("[data-contact-reason]");
+        var msgEl = document.querySelector("[data-contact-message]");
+
+        function setStatus(text, type) {
+          if (!statusBox) return;
+          statusBox.hidden = false;
+          statusBox.dataset.state = type || "info";
+          statusBox.textContent = text;
+        }
+
+        function buildBody() {
+          return "From: " + nameEl.value + " (" + emailEl.value + ")\nReason: " + reasonEl.value + "\n\n" + msgEl.value;
+        }
+
+        function isValidEmail(v) {
+          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+        }
+
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          if (!nameEl.value.trim() || !isValidEmail(emailEl.value) || !msgEl.value.trim()) {
+            setStatus("Please fill your name, a valid email, and a message before sending.", "error");
+            return;
+          }
+          var subject = encodeURIComponent("[ProtectMyPhoto] " + reasonEl.value + " - " + nameEl.value);
+          var body = encodeURIComponent(buildBody());
+          setStatus("Opening your email app now. If nothing happens in a few seconds, use \"Copy message instead\" below.", "info");
+          if (copyBtn) copyBtn.hidden = false;
+          window.location.href = "mailto:admin@protectmyphoto.in?subject=" + subject + "&body=" + body;
+        });
+
+        if (copyBtn) {
+          copyBtn.addEventListener("click", function () {
+            var text = "To: admin@protectmyphoto.in\nSubject: [ProtectMyPhoto] " + (reasonEl.value || "") + " - " + (nameEl.value || "") + "\n\n" + buildBody();
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(text).then(function () {
+                setStatus("Message copied. Paste it into Gmail, WhatsApp, or any app and send to admin@protectmyphoto.in.", "success");
+              }).catch(function () {
+                setStatus("Could not copy automatically. Please select and copy the message manually, then email it to admin@protectmyphoto.in.", "error");
+              });
+            } else {
+              setStatus("Copy not supported in this browser. Please email admin@protectmyphoto.in directly with your message.", "error");
+            }
+          });
+        }
+      })();
+    </script>
     <footer class="site-footer">
       <div><a class="brand footer-brand" href="index.html"><span class="brand-mark">P</span><span>ProtectMyPhoto</span></a><p>Privacy-first browser tools.</p></div>
       <nav aria-label="Footer navigation"><a href="tools.html">Tools</a><a href="faq.html">FAQ</a><a href="privacy-policy.html">Privacy</a><a href="terms.html">Terms</a></nav>
