@@ -29,6 +29,8 @@
   var firebaseConfig = null;
   var lastVisible = null;
   var pageSize = 6;
+  var visibleReviewCount = pageSize;
+  var allApprovedReviews = [];
   var loadedReviews = [];
   var blockedWords = ["scam", "fraud", "fake", "abuse", "hate", "idiot", "stupid"];
 
@@ -204,12 +206,12 @@
     }
   }
 
-  function renderList(docs, append) {
-    if (!append && list) {
+  function renderList(docs) {
+    if (list) {
       list.innerHTML = "";
     }
 
-    docs.forEach(function (doc) {
+    docs.slice(0, visibleReviewCount).forEach(function (doc) {
       if (list) {
         list.appendChild(renderReview(doc));
       }
@@ -217,6 +219,10 @@
 
     if (empty) {
       empty.hidden = Boolean(list && list.children.length);
+    }
+
+    if (moreButton) {
+      moreButton.hidden = docs.length <= visibleReviewCount;
     }
   }
 
@@ -246,7 +252,7 @@
             value: { stringValue: "approved" }
           }
         },
-        limit: pageSize
+        limit: 50
       }
     };
 
@@ -275,7 +281,23 @@
     });
   }
 
-  async function loadReviews(append) {
+  function reviewTimestampValue(review) {
+    var data = review && review.data ? review.data() : review;
+    var timestamp = data && data.timestamp;
+    if (timestamp && timestamp.toMillis) return timestamp.toMillis();
+    if (timestamp && timestamp.toDate) return timestamp.toDate().getTime();
+    if (timestamp instanceof Date) return timestamp.getTime();
+    if (typeof timestamp === "string") return new Date(timestamp).getTime() || 0;
+    return 0;
+  }
+
+  function sortReviewsNewestFirst(reviews) {
+    return reviews.slice().sort(function (a, b) {
+      return reviewTimestampValue(b) - reviewTimestampValue(a);
+    });
+  }
+
+  async function loadReviews() {
     if (!db || !firestore) return;
 
     try {
@@ -283,36 +305,26 @@
       var constraints = [
         firestore.collection(db, "reviews"),
         firestore.where("status", "==", "approved"),
-        firestore.limit(pageSize)
+        firestore.limit(50)
       ];
-
-      if (append && lastVisible) {
-        constraints.push(firestore.startAfter(lastVisible));
-      }
 
       var snapshot = await firestore.getDocs(firestore.query.apply(null, constraints));
       var docs = snapshot.docs;
-      if (!docs.length && !append) {
+      if (!docs.length) {
         var fallbackReviews = await loadReviewsFromRest();
         if (fallbackReviews.length) {
-          moreButton.hidden = true;
-          loadedReviews = fallbackReviews;
-          renderList(fallbackReviews, false);
+          allApprovedReviews = sortReviewsNewestFirst(fallbackReviews);
+          loadedReviews = allApprovedReviews.map(function (review) { return review.data ? review.data() : review; });
+          renderList(allApprovedReviews);
           updateSummary(loadedReviews);
           if (liveBadge) liveBadge.textContent = "Live";
           return;
         }
       }
       lastVisible = docs.length ? docs[docs.length - 1] : lastVisible;
-      moreButton.hidden = docs.length < pageSize;
-      var displayDocs = docs.slice().sort(function (a, b) {
-        var aTime = a.data().timestamp && a.data().timestamp.toMillis ? a.data().timestamp.toMillis() : 0;
-        var bTime = b.data().timestamp && b.data().timestamp.toMillis ? b.data().timestamp.toMillis() : 0;
-        return bTime - aTime;
-      });
-
-      loadedReviews = append ? loadedReviews.concat(displayDocs.map(function (doc) { return doc.data(); })) : displayDocs.map(function (doc) { return doc.data(); });
-      renderList(displayDocs, append);
+      allApprovedReviews = sortReviewsNewestFirst(docs);
+      loadedReviews = allApprovedReviews.map(function (doc) { return doc.data(); });
+      renderList(allApprovedReviews);
       updateSummary(loadedReviews);
       if (liveBadge) liveBadge.textContent = "Live";
     } catch (error) {
@@ -428,7 +440,8 @@
 
   if (moreButton) {
     moreButton.addEventListener("click", function () {
-      loadReviews(true);
+      visibleReviewCount += pageSize;
+      renderList(allApprovedReviews);
     });
   }
 
