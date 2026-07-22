@@ -23,6 +23,7 @@
   var schemaNode = document.querySelector("[data-review-schema]");
 
   var activeUser = null;
+  var authClient = null;
   var db = null;
   var firestore = null;
   var firebaseConfig = null;
@@ -351,8 +352,9 @@
     var name = cleanText(nameInput.value) || "Guest user";
     var reviewText = cleanText(textInput.value);
     var clientId = getClientId();
-    var identityField = activeUser ? "userId" : "clientId";
-    var identityValue = activeUser ? activeUser.uid : clientId;
+    var submitUser = activeUser || (authClient ? authClient.currentUser : null);
+    var identityField = submitUser ? "userId" : "clientId";
+    var identityValue = submitUser ? submitUser.uid : clientId;
 
     if (rating < 1 || rating > 5) {
       setStatus("Please choose a star rating.", "error");
@@ -383,7 +385,7 @@
         rating: rating,
         reviewText: reviewText.slice(0, 500),
         timestamp: firestore.serverTimestamp(),
-        userId: activeUser ? activeUser.uid : null,
+        userId: submitUser ? submitUser.uid : null,
         clientId: clientId,
         dayKey: todayKey(),
         status: "pending"
@@ -396,7 +398,11 @@
       await loadReviews(false);
     } catch (error) {
       console.warn("ProtectMyPhoto review submit failed:", error);
-      setStatus("Review could not be submitted. Please try again.", "error");
+      if (error && error.code === "permission-denied") {
+        setStatus("Review was blocked by Firestore rules. Please refresh, sign in again, and try once more.", "error");
+      } else {
+        setStatus("Review could not be submitted. Please try again.", "error");
+      }
     } finally {
       submitButton.disabled = false;
       submitButton.textContent = "Submit review";
@@ -438,6 +444,7 @@
     firestore = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js");
     var app = appModule.getApps().length ? appModule.getApp() : appModule.initializeApp(firebaseConfig);
     var auth = authModule.getAuth(app);
+    authClient = auth;
     db = firestore.getFirestore(app);
 
     authModule.onAuthStateChanged(auth, function (user) {
