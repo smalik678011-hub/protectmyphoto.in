@@ -23,12 +23,13 @@
     <!-- SEO:END -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="css/styles.css?v=12">
+    <link rel="stylesheet" href="css/styles.css?v=15">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="manifest" href="site.webmanifest">
       <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://protectmyphoto.in/#organization","name":"ProtectMyPhoto","url":"https://protectmyphoto.in/","email":"admin@protectmyphoto.in","logo":"https://protectmyphoto.in/favicon.svg"},{"@type":"FAQPage","@id":"https://protectmyphoto.in/tools.html#faq","mainEntity":[{"@type":"Question","name":"Which tool should I start with?","acceptedAnswer":{"@type":"Answer","text":"Use Compress Image for file-size limits, Resize Image for exact pixels, and Passport Photo Maker for form-ready ID photos."}},{"@type":"Question","name":"Can I use these tools on Hostinger/static hosting?","acceptedAnswer":{"@type":"Answer","text":"Yes. The tools run in the browser and do not need a Node.js production server."}},{"@type":"Question","name":"Are images saved by ProtectMyPhoto?","acceptedAnswer":{"@type":"Answer","text":"No. The MVP tools process files locally in your browser and do not upload or store images."}}]},{"@type":"BreadcrumbList","@id":"https://protectmyphoto.in/tools.html#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://protectmyphoto.in/"},{"@type":"ListItem","position":2,"name":"All Image Tools Online","item":"https://protectmyphoto.in/tools.html"}]}]}</script>
   </head>
   <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
     <header class="site-header">
       <a class="brand" href="index.html"><span class="brand-mark">P</span><span>ProtectMyPhoto</span></a>
       <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="siteNav">Menu</button>
@@ -40,7 +41,7 @@
         <a href="contact.html">Contact</a>
       </nav>
     </header>
-    <main>
+    <main id="main-content">
       <section class="hero tools-hub-hero">
         <div class="page-title">
           <p class="eyebrow">All tools</p>
@@ -68,7 +69,7 @@
         <div class="tool-command">
           <label class="tool-search">
             <span>Search tools</span>
-            <input data-tool-search type="search" placeholder="Try passport, PDF, metadata...">
+            <input data-tool-search aria-label="Search tools" type="search" placeholder="Try passport, PDF, metadata...">
           </label>
           <a class="tool-carousel-promo" href="custom-stamp-maker.html" aria-label="Try Stamp Maker">
             <span class="promo-kicker">New</span>

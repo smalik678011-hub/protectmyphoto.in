@@ -36,11 +36,13 @@
     try {
       configModule = await import("./firebase-config.js");
     } catch (error) {
+      console.warn("ProtectMyPhoto account status Firebase config could not load.", error);
       return;
     }
 
     var config = configModule.firebaseConfig || {};
     if (!config.apiKey || config.apiKey.indexOf("YOUR_") === 0) {
+      console.warn("ProtectMyPhoto account status Firebase config is missing.");
       return;
     }
 
@@ -67,6 +69,7 @@
         });
       });
     } catch (error) {
+      console.warn("ProtectMyPhoto account status could not connect to Firebase Auth.", error);
       accountLink.textContent = "Login";
     }
   }

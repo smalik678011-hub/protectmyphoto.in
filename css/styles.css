@@ -76,6 +76,27 @@ a {
   color: var(--primary);
 }
 
+.skip-link {
+  position: fixed;
+  left: 16px;
+  top: 16px;
+  z-index: 9999;
+  transform: translateY(-140%);
+  border: 1px solid rgba(232, 163, 61, 0.45);
+  border-radius: 999px;
+  background: var(--color-bg-elevated);
+  color: var(--color-text-primary);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.24);
+  font-weight: 800;
+  padding: 10px 14px;
+  text-decoration: none;
+  transition: transform 180ms ease;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
 button,
 input,
 select,

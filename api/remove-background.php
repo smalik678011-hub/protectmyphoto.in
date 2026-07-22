@@ -141,12 +141,12 @@ function friendly_error(int $status, string $body): array
     if (strlen($safeProviderMessage) > 260) {
         $safeProviderMessage = substr($safeProviderMessage, 0, 260) . '...';
     }
+    error_log('ProtectMyPhoto background provider error ' . $status . ': ' . $safeProviderMessage);
 
     if ($status === 401 || $status === 403) {
         return array(
             'status' => 502,
             'providerStatus' => $status,
-            'providerMessage' => $safeProviderMessage,
             'message' => 'Hugging Face token is not allowed for AI background removal. Please update the server token with Inference permission.'
         );
     }
@@ -155,7 +155,6 @@ function friendly_error(int $status, string $body): array
         return array(
             'status' => 502,
             'providerStatus' => $status,
-            'providerMessage' => $safeProviderMessage,
             'message' => 'The selected AI background model is not available on this inference endpoint. Please try again later.'
         );
     }
@@ -164,7 +163,6 @@ function friendly_error(int $status, string $body): array
         return array(
             'status' => 422,
             'providerStatus' => $status,
-            'providerMessage' => $safeProviderMessage,
             'message' => 'The AI model could not read this image. Please try a clear JPG or PNG photo.'
         );
     }
@@ -173,7 +171,6 @@ function friendly_error(int $status, string $body): array
         return array(
             'status' => 429,
             'providerStatus' => $status,
-            'providerMessage' => $safeProviderMessage,
             'message' => 'The AI background remover is rate limited right now. Please wait a minute and try again.'
         );
     }
@@ -182,7 +179,6 @@ function friendly_error(int $status, string $body): array
         return array(
             'status' => 503,
             'providerStatus' => $status,
-            'providerMessage' => $safeProviderMessage,
             'message' => 'The AI model is starting up. Please wait 20 seconds, then try again.'
         );
     }
@@ -190,7 +186,6 @@ function friendly_error(int $status, string $body): array
     return array(
         'status' => 502,
         'providerStatus' => $status,
-        'providerMessage' => $safeProviderMessage,
         'message' => 'Background removal could not finish. Please try again.'
     );
 }
