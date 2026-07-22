@@ -25,6 +25,7 @@
   var activeUser = null;
   var db = null;
   var firestore = null;
+  var firebaseConfig = null;
   var lastVisible = null;
   var pageSize = 6;
   var loadedReviews = [];
@@ -120,6 +121,15 @@
     var text = document.createElement("p");
     var date = document.createElement("time");
     var timestamp = data.timestamp && data.timestamp.toDate ? data.timestamp.toDate() : null;
+    if (!timestamp && data.timestamp instanceof Date) {
+      timestamp = data.timestamp;
+    }
+    if (!timestamp && typeof data.timestamp === "string") {
+      timestamp = new Date(data.timestamp);
+    }
+    if (timestamp && Number.isNaN(timestamp.getTime())) {
+      timestamp = null;
+    }
 
     card.className = "review-card";
     top.className = "review-card-top";
@@ -209,6 +219,61 @@
     }
   }
 
+  function firestoreValueToPlain(value) {
+    if (!value || typeof value !== "object") return null;
+    if (Object.prototype.hasOwnProperty.call(value, "stringValue")) return value.stringValue;
+    if (Object.prototype.hasOwnProperty.call(value, "integerValue")) return Number(value.integerValue);
+    if (Object.prototype.hasOwnProperty.call(value, "doubleValue")) return Number(value.doubleValue);
+    if (Object.prototype.hasOwnProperty.call(value, "booleanValue")) return Boolean(value.booleanValue);
+    if (Object.prototype.hasOwnProperty.call(value, "timestampValue")) return value.timestampValue;
+    if (Object.prototype.hasOwnProperty.call(value, "nullValue")) return null;
+    return null;
+  }
+
+  async function loadReviewsFromRest() {
+    if (!firebaseConfig || !firebaseConfig.projectId || !firebaseConfig.apiKey) {
+      return [];
+    }
+
+    var body = {
+      structuredQuery: {
+        from: [{ collectionId: "reviews" }],
+        where: {
+          fieldFilter: {
+            field: { fieldPath: "status" },
+            op: "EQUAL",
+            value: { stringValue: "approved" }
+          }
+        },
+        limit: pageSize
+      }
+    };
+
+    var response = await fetch("https://firestore.googleapis.com/v1/projects/" + encodeURIComponent(firebaseConfig.projectId) + "/databases/(default)/documents:runQuery?key=" + encodeURIComponent(firebaseConfig.apiKey), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      cache: "no-store"
+    });
+
+    if (!response.ok) {
+      throw new Error("Reviews fallback could not read Firestore.");
+    }
+
+    var payload = await response.json();
+    return payload.filter(function (item) {
+      return item.document && item.document.fields;
+    }).map(function (item) {
+      var output = {};
+      Object.keys(item.document.fields).forEach(function (key) {
+        output[key] = firestoreValueToPlain(item.document.fields[key]);
+      });
+      return output;
+    }).sort(function (a, b) {
+      return new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime();
+    });
+  }
+
   async function loadReviews(append) {
     if (!db || !firestore) return;
 
@@ -226,6 +291,17 @@
 
       var snapshot = await firestore.getDocs(firestore.query.apply(null, constraints));
       var docs = snapshot.docs;
+      if (!docs.length && !append) {
+        var fallbackReviews = await loadReviewsFromRest();
+        if (fallbackReviews.length) {
+          moreButton.hidden = true;
+          loadedReviews = fallbackReviews;
+          renderList(fallbackReviews, false);
+          updateSummary(loadedReviews);
+          if (liveBadge) liveBadge.textContent = "Live";
+          return;
+        }
+      }
       lastVisible = docs.length ? docs[docs.length - 1] : lastVisible;
       moreButton.hidden = docs.length < pageSize;
       var displayDocs = docs.slice().sort(function (a, b) {
@@ -352,15 +428,15 @@
 
   try {
     var configModule = await import("./firebase-config.js");
-    var config = configModule.firebaseConfig || {};
-    if (!config.apiKey || config.apiKey.indexOf("YOUR_") === 0) {
+    firebaseConfig = configModule.firebaseConfig || {};
+    if (!firebaseConfig.apiKey || firebaseConfig.apiKey.indexOf("YOUR_") === 0) {
       throw new Error("Firebase config is missing.");
     }
 
     var appModule = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js");
     var authModule = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js");
     firestore = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js");
-    var app = appModule.getApps().length ? appModule.getApp() : appModule.initializeApp(config);
+    var app = appModule.getApps().length ? appModule.getApp() : appModule.initializeApp(firebaseConfig);
     var auth = authModule.getAuth(app);
     db = firestore.getFirestore(app);
 
