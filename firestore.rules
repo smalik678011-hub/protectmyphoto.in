@@ -27,13 +27,13 @@ service cloud.firestore {
         && request.resource.data.clientId.size() >= 8
         && request.resource.data.clientId.size() <= 80
         && request.resource.data.dayKey is string
-        && request.resource.data.dayKey.matches('^\\d{4}-\\d{2}-\\d{2}$')
-        && request.resource.data.status == 'approved';
+        && request.resource.data.dayKey.matches('^\\d{4}-\\d{2}-\\d{2}$');
     }
 
     match /reviews/{reviewId} {
-      allow read: if true;
+      allow read: if resource.data.status == 'approved';
       allow create: if isValidReview()
+        && request.resource.data.status == 'pending'
         && (
           (request.auth != null && request.resource.data.userId == request.auth.uid)
           || (request.auth == null && request.resource.data.userId == null)

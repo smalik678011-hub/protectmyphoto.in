@@ -216,7 +216,7 @@
       if (liveBadge) liveBadge.textContent = "Loading";
       var constraints = [
         firestore.collection(db, "reviews"),
-        firestore.orderBy("timestamp", "desc"),
+        firestore.where("status", "==", "approved"),
         firestore.limit(pageSize)
       ];
 
@@ -228,9 +228,14 @@
       var docs = snapshot.docs;
       lastVisible = docs.length ? docs[docs.length - 1] : lastVisible;
       moreButton.hidden = docs.length < pageSize;
+      var displayDocs = docs.slice().sort(function (a, b) {
+        var aTime = a.data().timestamp && a.data().timestamp.toMillis ? a.data().timestamp.toMillis() : 0;
+        var bTime = b.data().timestamp && b.data().timestamp.toMillis ? b.data().timestamp.toMillis() : 0;
+        return bTime - aTime;
+      });
 
-      loadedReviews = append ? loadedReviews.concat(docs.map(function (doc) { return doc.data(); })) : docs.map(function (doc) { return doc.data(); });
-      renderList(docs, append);
+      loadedReviews = append ? loadedReviews.concat(displayDocs.map(function (doc) { return doc.data(); })) : displayDocs.map(function (doc) { return doc.data(); });
+      renderList(displayDocs, append);
       updateSummary(loadedReviews);
       if (liveBadge) liveBadge.textContent = "Live";
     } catch (error) {
@@ -305,10 +310,10 @@
         userId: activeUser ? activeUser.uid : null,
         clientId: clientId,
         dayKey: todayKey(),
-        status: "approved"
+        status: "pending"
       });
       markLocalReviewToday();
-      setStatus("Thanks. Your review is live.", "success");
+      setStatus("Thanks. Your review was submitted and will appear after approval.", "success");
       textInput.value = "";
       setRating(0);
       lastVisible = null;

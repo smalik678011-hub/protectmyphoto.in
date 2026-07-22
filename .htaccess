@@ -4,6 +4,13 @@ RewriteEngine On
 RewriteCond %{HTTP_HOST} ^www\.protectmyphoto\.in$ [NC]
 RewriteRule ^(.*)$ https://protectmyphoto.in/$1 [L,R=301]
 
+# Never expose local configuration files from shared hosting.
+<FilesMatch "^\.env$">
+  Require all denied
+</FilesMatch>
+
+RedirectMatch 404 ^/api/\.env$
+
 <IfModule mod_headers.c>
   <FilesMatch "\.(css|js)$">
     Header set Cache-Control "no-cache, must-revalidate"

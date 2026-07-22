@@ -2,6 +2,9 @@
 declare(strict_types=1);
 
 const MAX_BYTES = 12582912;
+const RATE_LIMIT_WINDOW_SECONDS = 1800;
+const RATE_LIMIT_MAX_REQUESTS = 8;
+const ALLOWED_HOSTS = array('protectmyphoto.in', 'www.protectmyphoto.in');
 const HF_ENDPOINTS = array(
     'https://router.huggingface.co/hf-inference/models/Trendyol/background-removal'
 );
@@ -46,6 +49,88 @@ function load_api_key(): string
     }
 
     return $key ? trim($key) : '';
+}
+
+function request_host(string $url): string
+{
+    $host = parse_url($url, PHP_URL_HOST);
+    return is_string($host) ? strtolower($host) : '';
+}
+
+function is_allowed_source(): bool
+{
+    $origin = isset($_SERVER['HTTP_ORIGIN']) ? trim((string) $_SERVER['HTTP_ORIGIN']) : '';
+    $referer = isset($_SERVER['HTTP_REFERER']) ? trim((string) $_SERVER['HTTP_REFERER']) : '';
+
+    if ($origin !== '') {
+        return in_array(request_host($origin), ALLOWED_HOSTS, true);
+    }
+
+    if ($referer !== '') {
+        return in_array(request_host($referer), ALLOWED_HOSTS, true);
+    }
+
+    return false;
+}
+
+function client_ip(): string
+{
+    if (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) {
+        return (string) $_SERVER['HTTP_CF_CONNECTING_IP'];
+    }
+
+    if (!empty($_SERVER['REMOTE_ADDR'])) {
+        return (string) $_SERVER['REMOTE_ADDR'];
+    }
+
+    return 'unknown';
+}
+
+function rate_limit_path(): string
+{
+    $dir = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'protectmyphoto-bg-rate';
+    if (!is_dir($dir)) {
+        @mkdir($dir, 0700, true);
+    }
+
+    return $dir . DIRECTORY_SEPARATOR . hash('sha256', client_ip()) . '.json';
+}
+
+function rate_limit_allowed(): bool
+{
+    $path = rate_limit_path();
+    $now = time();
+    $state = array('start' => $now, 'count' => 0);
+
+    $handle = @fopen($path, 'c+');
+    if (!$handle) {
+        return true;
+    }
+
+    flock($handle, LOCK_EX);
+    $contents = stream_get_contents($handle);
+    if (is_string($contents) && $contents !== '') {
+        $decoded = json_decode($contents, true);
+        if (is_array($decoded) && isset($decoded['start'], $decoded['count'])) {
+            $state = array('start' => (int) $decoded['start'], 'count' => (int) $decoded['count']);
+        }
+    }
+
+    if ($now - $state['start'] >= RATE_LIMIT_WINDOW_SECONDS) {
+        $state = array('start' => $now, 'count' => 0);
+    }
+
+    $state['count'] += 1;
+    $allowed = $state['count'] <= RATE_LIMIT_MAX_REQUESTS;
+
+    ftruncate($handle, 0);
+    rewind($handle);
+    fwrite($handle, json_encode($state));
+    fflush($handle);
+    flock($handle, LOCK_UN);
+    fclose($handle);
+
+    return $allowed;
 }
 
 function friendly_error(int $status, string $body): array
@@ -157,6 +242,14 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     json_response(405, array('message' => 'Use POST to remove a background.'));
 }
 
+if (!is_allowed_source()) {
+    json_response(403, array('message' => 'Background removal is available from protectmyphoto.in only.'));
+}
+
+if (!rate_limit_allowed()) {
+    json_response(429, array('message' => 'Too many background removal attempts. Please wait a while and try again.'));
+}
+
 $contentLength = isset($_SERVER['CONTENT_LENGTH']) ? (int) $_SERVER['CONTENT_LENGTH'] : 0;
 if ($contentLength <= 0) {
     json_response(400, array('message' => 'No image data was received.'));
@@ -263,10 +356,6 @@ if ($lastError) {
 
     if (isset($lastError['providerError'])) {
         $payload['providerError'] = $lastError['providerError'];
-    }
-
-    if (isset($lastError['providerMessage'])) {
-        $payload['providerMessage'] = $lastError['providerMessage'];
     }
 
     json_response($lastError['status'], $payload);
