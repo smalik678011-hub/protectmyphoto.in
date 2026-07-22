@@ -35,8 +35,8 @@ service cloud.firestore {
       allow create: if isValidReview()
         && request.resource.data.status == 'pending'
         && (
-          (request.auth != null && request.resource.data.userId == request.auth.uid)
-          || (request.auth == null && request.resource.data.userId == null)
+          request.resource.data.userId == null
+          || request.resource.data.userId is string
         );
       allow update, delete: if false;
     }
