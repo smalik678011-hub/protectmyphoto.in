@@ -6,6 +6,8 @@ const RATE_LIMIT_WINDOW_SECONDS = 1800;
 const RATE_LIMIT_MAX_REQUESTS = 8;
 const ALLOWED_HOSTS = array('protectmyphoto.in', 'www.protectmyphoto.in');
 const HF_ENDPOINTS = array(
+    'https://router.huggingface.co/hf-inference/models/briaai/RMBG-2.0',
+    'https://router.huggingface.co/hf-inference/models/briaai/RMBG-1.4',
     'https://router.huggingface.co/hf-inference/models/Trendyol/background-removal'
 );
 const HF_ROUTER_RESOLVE = array(

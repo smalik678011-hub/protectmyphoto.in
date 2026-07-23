@@ -293,6 +293,164 @@
     };
   }
 
+  function detectRectEdgeColor(imageData, width, height, rect) {
+    var data = imageData.data;
+    var left = clamp(Math.round(rect.x), 0, width - 1);
+    var top = clamp(Math.round(rect.y), 0, height - 1);
+    var right = clamp(Math.round(rect.x + rect.width - 1), 0, width - 1);
+    var bottom = clamp(Math.round(rect.y + rect.height - 1), 0, height - 1);
+    var total = { r: 0, g: 0, b: 0, count: 0 };
+    var stepX = Math.max(1, Math.floor((right - left + 1) / 18));
+    var stepY = Math.max(1, Math.floor((bottom - top + 1) / 18));
+
+    function addPoint(x, y) {
+      var offset = (y * width + x) * 4;
+      if (data[offset + 3] < 20) {
+        return;
+      }
+
+      total.r += data[offset];
+      total.g += data[offset + 1];
+      total.b += data[offset + 2];
+      total.count += 1;
+    }
+
+    for (var x = left; x <= right; x += stepX) {
+      addPoint(x, top);
+      addPoint(x, bottom);
+    }
+
+    for (var y = top; y <= bottom; y += stepY) {
+      addPoint(left, y);
+      addPoint(right, y);
+    }
+
+    if (!total.count) {
+      return detectEdgeColor(imageData, width, height);
+    }
+
+    return {
+      r: Math.round(total.r / total.count),
+      g: Math.round(total.g / total.count),
+      b: Math.round(total.b / total.count)
+    };
+  }
+
+  function connectedBackgroundByReference(referenceData, width, height, rect, targetColor, tolerance) {
+    var data = referenceData.data;
+    var total = width * height;
+    var reachable = new Uint8Array(total);
+    var queue = new Int32Array(total);
+    var left = clamp(Math.round(rect.x), 0, width - 1);
+    var top = clamp(Math.round(rect.y), 0, height - 1);
+    var right = clamp(Math.round(rect.x + rect.width - 1), 0, width - 1);
+    var bottom = clamp(Math.round(rect.y + rect.height - 1), 0, height - 1);
+    var head = 0;
+    var tail = 0;
+
+    function canUse(index) {
+      var offset = index * 4;
+      return data[offset + 3] > 20 &&
+        colorDistance(data[offset], data[offset + 1], data[offset + 2], targetColor.r, targetColor.g, targetColor.b) <= tolerance;
+    }
+
+    function enqueue(index) {
+      if (index < 0 || index >= total || reachable[index] || !canUse(index)) {
+        return;
+      }
+
+      reachable[index] = 1;
+      queue[tail] = index;
+      tail += 1;
+    }
+
+    for (var x = left; x <= right; x += 1) {
+      enqueue(top * width + x);
+      enqueue(bottom * width + x);
+    }
+
+    for (var y = top; y <= bottom; y += 1) {
+      enqueue(y * width + left);
+      enqueue(y * width + right);
+    }
+
+    while (head < tail) {
+      var current = queue[head];
+      head += 1;
+
+      var cx = current % width;
+      var cy = Math.floor(current / width);
+
+      if (cx > left) enqueue(current - 1);
+      if (cx < right) enqueue(current + 1);
+      if (cy > top) enqueue(current - width);
+      if (cy < bottom) enqueue(current + width);
+    }
+
+    return reachable;
+  }
+
+  function applyAiBackgroundSpillCleanup(canvas, background, layout, options) {
+    if (!state.cutoutImage || !state.image || !layout) {
+      return;
+    }
+
+    var tolerance = Number(options && options.tolerance) || 72;
+    var softness = Number(options && options.softness) || 28;
+    var context = canvas.getContext("2d", { willReadFrequently: true });
+    var width = canvas.width;
+    var height = canvas.height;
+    var output = context.getImageData(0, 0, width, height);
+    var outputData = output.data;
+    var referenceCanvas = makeCanvas(width, height);
+    var referenceContext = referenceCanvas.getContext("2d", { alpha: true, willReadFrequently: true });
+    var bg = hexToRgb(background);
+    var rect = {
+      x: layout.x,
+      y: layout.y,
+      width: layout.width,
+      height: layout.height
+    };
+
+    referenceContext.clearRect(0, 0, width, height);
+    referenceContext.drawImage(state.image, rect.x, rect.y, rect.width, rect.height);
+
+    var reference = referenceContext.getImageData(0, 0, width, height);
+    var edgeColor = detectRectEdgeColor(reference, width, height, rect);
+    var reachable = connectedBackgroundByReference(reference, width, height, rect, edgeColor, tolerance + softness);
+    var cleaned = 0;
+
+    for (var index = 0; index < reachable.length; index += 1) {
+      if (!reachable[index]) {
+        continue;
+      }
+
+      var offset = index * 4;
+      var refDistance = colorDistance(
+        reference.data[offset],
+        reference.data[offset + 1],
+        reference.data[offset + 2],
+        edgeColor.r,
+        edgeColor.g,
+        edgeColor.b
+      );
+      var mix = refDistance <= tolerance ? 1 : 1 - ((refDistance - tolerance) / Math.max(1, softness));
+      mix = clamp(mix, 0, 1);
+
+      outputData[offset] = Math.round((bg.r * mix) + (outputData[offset] * (1 - mix)));
+      outputData[offset + 1] = Math.round((bg.g * mix) + (outputData[offset + 1] * (1 - mix)));
+      outputData[offset + 2] = Math.round((bg.b * mix) + (outputData[offset + 2] * (1 - mix)));
+      outputData[offset + 3] = 255;
+      cleaned += 1;
+    }
+
+    if (cleaned) {
+      console.info("ProtectMyPhoto cleaned AI background spill pixels:", cleaned);
+    }
+
+    context.putImageData(output, 0, 0);
+  }
+
   function applyPlainBackgroundCleanup(canvas, background, options) {
     var mode = options.mode || "off";
     if (mode === "off") return;
@@ -788,6 +946,17 @@
     context.fillStyle = bg;
     context.fillRect(0, 0, dims.width, dims.height);
     context.drawImage(image, x, y, drawWidth, drawHeight);
+
+    applyAiBackgroundSpillCleanup(canvas, bg, {
+      x: x,
+      y: y,
+      width: drawWidth,
+      height: drawHeight
+    }, {
+      tolerance: 76,
+      softness: 34
+    });
+
     return canvas;
   }
 
@@ -1170,7 +1339,17 @@
     context.fillRect(0, 0, width, height);
     context.drawImage(image, Math.round((width - drawWidth) / 2), Math.round((height - drawHeight) / 2), drawWidth, drawHeight);
 
-    if (!state.cutoutImage) {
+    if (state.cutoutImage) {
+      applyAiBackgroundSpillCleanup(canvas, background, {
+        x: Math.round((width - drawWidth) / 2),
+        y: Math.round((height - drawHeight) / 2),
+        width: drawWidth,
+        height: drawHeight
+      }, {
+        tolerance: toleranceControl ? toleranceControl.value : 76,
+        softness: softnessControl ? softnessControl.value : 34
+      });
+    } else {
       applyPlainBackgroundCleanup(canvas, background, {
         mode: cleanControl ? cleanControl.value : "off",
         tolerance: toleranceControl ? toleranceControl.value : 0,
